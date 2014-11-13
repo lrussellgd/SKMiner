@@ -45,9 +45,7 @@ BUILDING
 
 You will need these libraries to build from source:
 
-jansson 2.7
-boost 1.56.0
-OpenSSL
+jansson 2.7, boost 1.56.0, OpenSSL
 
 You will also need the AMD ADL files. See the readme.txt in /source/ADL_SDK
 
