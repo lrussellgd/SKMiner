@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display>
+	<section>
+		<title>Menu</title>
+		<text>
+			<line>Coin Shield Miner Version: {@VERSION} . Start Date: {@DATE} . Runtime: {@RUNTIME}</line>
+			<line>Options: [G]PUs  [S]ettings  [P]ools  [D]isplay  [Q]uit</line>
+		</text>
+	</section>
+	<section>
+		<title>Miner Overview</title>
+		<text>
+			<line>Connection: {@CONNECTION} Block: {@BLOCK}</line>
+			<line>Difficulty: {@DIFFICULTY}  Accepted: {@ACCEPTED}  Rejected: {@REJECTED} </line>
+			<line>HW Errors: {@HW}  Worker Usage: {@WU}</line>
+		</text>
+	</section>	
+	<section>
+		<title>Devices</title>
+		<text>
+			<line>GPU {@GPUID} - {@GPUNAME}: {@HASHES}h/s  -  {@TEMP}C  -  A:{@GPUACCEPTED}  -  R:{@GPUREJECTED}  -  HW:{@GPUHW}  -  I:{@GPUDIFF}</line>
+		</text>
+	</section>
+	<section>
+		<title>Log</title>
+		<text>
+			<line></line>
+		</text>
+	</section>
+</display>
