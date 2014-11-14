@@ -4,9 +4,9 @@
 // Author:	Liam Russell (A.K.A. BitSlapper)
 //			djm34
 //
-//			CalculateThreads and SetBufferSize are
-//			based off of code produced from the 
-//			authors of cgminer and sph-sgminer
+//			CalculateThreads is	based off of code 
+//			produced from the authors of 
+//			cgminer and sph-sgminer
 //
 // Copyright:	2014-2015 Liam Russell
 //				2014-2015 djm34	
@@ -31,8 +31,6 @@
 #include "../data/MinerData.h"
 
 
-
-void SetBufferSize(GPUData* pGPU,CLDevice* dev, CLKernel* pKernel, size_t* buffsize);
 void CalculateThreads(GPUData* pGPU, CLDevice* dev, CLKernel* clKernel, size_t* globalThreads, size_t* localThreads, unsigned int* hashes, size_t* buffsize);
 
 bool sk1024_kernel_djm2(MinerData* pMinerData);

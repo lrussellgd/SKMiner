@@ -7,6 +7,12 @@
 #include "../data/SKMinerData.h"
 #include "../core/bignum.h"
 
+
+SKMinerThread::SKMinerThread() : MinerThread()
+{
+
+}
+
 SKMinerThread::SKMinerThread(SKMinerData* pData) : MinerThread(pData)
 {
 	m_pTHREAD = boost::thread(&SKMinerThread::Miner, this);

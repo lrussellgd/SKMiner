@@ -37,6 +37,7 @@ class MinerThread
 
 	public:			
 		
+		MinerThread();
 		MinerThread(MinerData* pData);
 		MinerThread(const MinerThread& miner);
 		MinerThread& operator=(const MinerThread& miner);

@@ -15,6 +15,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 CLKernel::CLKernel()
 {
+	this->m_unWorkSize = this->m_unPrefWorkSize = 0;
+	this->m_stGlobalWorkGroupSize = this->m_stLocalWorkGroupSize = 0;
+	this->m_pReqdWorkGroupSizes[0] = 0;
+	this->m_pReqdWorkGroupSizes[1] = 0;
+	this->m_pReqdWorkGroupSizes[2] = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

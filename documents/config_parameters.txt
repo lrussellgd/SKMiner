@@ -1,0 +1,95 @@
+All of the configuration settings are already part of the config file in:
+
+/resources/config/miner.conf
+
+You can change the settings here to configure the miner.
+
+There is also the option of passing parameters along to the program on start up.
+
+Example Usage:
+
+setx GPU_FORCE_64BIT_PTR 1
+SKMiner.exe --connections 127.0.0.1:9325 user x password x --algorithm sk1024_djm --gpu-engine 1100
+
+PARAMETERS
+-----------
+--connections or -C
+
+Used for setting the mining connection.
+
+
+--algorithm or -A
+
+Used for setting the kernel to work on.
+
+
+--gpu-engine or -E
+
+Used to set the GPU Engine Clock
+
+
+--gpu-memclock or -M
+
+Used to set the GPU Memory Clock
+
+
+--gpu-vddc or -F
+
+Used to set the GPU Voltage
+
+
+--gpu-shaders or -S
+
+USed to set the GPU Shader Count
+
+
+--gpu-powertune or -P
+
+Used to set the GPU Powertune Percentage
+
+
+--gpu-threads or -T
+
+Used to set the amount of GPU threads to use for work.
+
+
+ --intensity or -I
+ 
+ Used to set the GPU work intensity
+ 
+ 
+ --xintensity or -X
+ 
+ Used to set the GPU work xintensity
+ 
+ 
+ --rawintensity or -R
+ 
+ Used to set the GPU work rawintensity
+ 
+ 
+ --thread-concurrency
+ 
+ Used to set the GPU thread concurreny
+ 
+ 
+ --lookup-gap or -L
+ 
+ Used to set the lookup gap value for OpenCL Kernels - Not used in SK1024
+ 
+ 
+ --worksize or -W
+ 
+ Used to set the work size for the OpenCL Kernel
+ 
+ 
+ --vectors or -V
+ 
+ Used to set the vectors value for OpenCL Kernels
+ 
+ 
+ --devices or -D
+ 
+ Used to specify the use of only certain GPU's
+ 
+ If not specified then all GPU's will run.

@@ -14,7 +14,6 @@
 #include <CL/cl.hpp>
 #include <string>
 #include <map>
-#include <boost/thread/mutex.hpp>
 
 #include "BaseComputeDevice.h"
 
@@ -34,8 +33,6 @@ private:
 
 	size_t m_stComputeShaders;
 	size_t m_stMaxWorkGroupSize;
-
-	boost::mutex m_clLock;
 
 	cl::Device m_clDevice;
 	
@@ -75,9 +72,6 @@ public:
 
 	CLDevice* Clone();
 	CLDevice* DeepCopy();
-
-	void Lock()		{	m_clLock.lock();	}
-	void Unlock()	{	m_clLock.unlock();	}
 
 	///////////////////////////////////////////////////////////////////////////////
 	//Accessors

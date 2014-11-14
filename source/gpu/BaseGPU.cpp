@@ -18,7 +18,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 BaseGPU::BaseGPU()
 {
+	this->m_bIsDefFanValid = this->m_bIsFanValid = this->m_bIsManaged = false;
+	this->m_nGPUID = this->m_nAdapterIndex = this->m_nBusNumber = 0;
+	this->m_nLastEngine = this->m_nLastTemp = 0;
 	this->m_pTwin = NULL;
+	this->m_pGPUSettings = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

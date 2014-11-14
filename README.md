@@ -20,23 +20,22 @@ The config file is in /resources/config.
 
 It works much in the same way as sgminer.  
 
-However, currently you must enter all GPU devices you wish to use in the "devices" section.
-
-If you have 3 GPU's in your system then it will look like: 
-
-"devices" : "0,1,2"
-
-
-If you wish to use the GPU settings then you much set them up for each GPU. For example:
-
-"gpu-engine" : "1080,950,1080"
-
 
 Settings can be passed along to the miner on startup, such as with a .bat file.
 
 They will replace settings in the config file. 
 
-However, this has not fully been tested and it's recommended to use the config file for now.
+For Example:
+
+setx GPU_FORCE_64BIT_PTR 1
+SKMiner.exe --connections 127.0.0.1:9325 user x password x --algorithm sk1024_djm
+
+These are the only settings required to start the miner, the config file is no longer necessary.
+Of course this will put you on the lowest settings and cause poor performance.
+
+To see a full list of the optional config parameters view the file:
+
+ /documents/config_parameters.txt
 
 
 

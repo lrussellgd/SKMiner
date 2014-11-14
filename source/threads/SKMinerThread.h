@@ -20,6 +20,7 @@ class SKMinerThread : public MinerThread
 
 public:
 
+	SKMinerThread();
 	SKMinerThread(SKMinerData* pData);
 	SKMinerThread(const SKMinerThread& miner);
 	SKMinerThread& operator=(const SKMinerThread& miner);

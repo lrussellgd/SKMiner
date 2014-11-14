@@ -25,6 +25,7 @@ class RunOptions : public IPrototype
 private:
 
 	std::string						m_szAlgorithm;
+	std::string						m_szDevices;
 	std::vector<ConfigConnection*>	m_vecConnections;
 	std::vector<GPUSetting*>		m_vecGPUSettings;	
 
@@ -61,16 +62,18 @@ public:
 	///////////////////////////////////////////////////////////////////////////////
 	//Accessors
 	///////////////////////////////////////////////////////////////////////////////
-	const std::string&						GetAlgorithm()		const			{	return this->m_szAlgorithm;						}
-	const std::vector<ConfigConnection*>	GetConnections()	const			{	return this->m_vecConnections;					}
-	const std::vector<GPUSetting*>			GetGPUSettings()	const			{	return this->m_vecGPUSettings;					}
+	const std::string&						GetAlgorithm()		const			{	return this->m_szAlgorithm;					}
+	const std::string&						GetDevices()		const			{	return this->m_szDevices;					}	
+	const std::vector<ConfigConnection*>	GetConnections()	const			{	return this->m_vecConnections;				}
+	const std::vector<GPUSetting*>			GetGPUSettings()	const			{	return this->m_vecGPUSettings;				}
 
 	///////////////////////////////////////////////////////////////////////////////
 	//Mutators
 	///////////////////////////////////////////////////////////////////////////////
-	void	SetAlgorithm(const std::string& szAlgorithm)					{	this->m_szAlgorithm = szAlgorithm; }
-	void	SetConnections(std::vector<ConfigConnection*> vecConnections)	{	this->m_vecConnections = vecConnections; }
-	void	SetGPUSettings(std::vector<GPUSetting*> vecGPUSettings)			{	this->m_vecGPUSettings = vecGPUSettings; }
+	void	SetAlgorithm(const std::string& szAlgorithm)					{	this->m_szAlgorithm = szAlgorithm;				}
+	void	SetDevices(const std::string& szDevices)						{	this->m_szDevices = szDevices;					}
+	void	SetConnections(std::vector<ConfigConnection*> vecConnections)	{	this->m_vecConnections = vecConnections;		}
+	void	SetGPUSettings(std::vector<GPUSetting*> vecGPUSettings)			{	this->m_vecGPUSettings = vecGPUSettings;		}
 	void	AddConnection(ConfigConnection* connection)						{	this->m_vecConnections.push_back(connection);	}
 	void	AddGPUSetting(GPUSetting* setting)								{	this->m_vecGPUSettings.push_back(setting);		}
 };

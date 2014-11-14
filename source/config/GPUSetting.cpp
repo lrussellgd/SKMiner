@@ -19,7 +19,8 @@ GPUSetting::GPUSetting()
 
 	m_nEngineClock = m_nMinEngineSpeed = m_nMaxEngineSpeed = m_nMemclock = m_nPowerTune = 0;
 	m_nThreads = m_nShaders = m_nTargetFan = m_nTargetTemp = m_nOverheatTemp = m_nCutOffTemp = 0;	
-	m_nIntensity = 0;
+	m_nIntensity = m_nRawintensity = m_nXIntensity = m_nThreadConcurreny = m_nLookupGap = 0;
+	m_nWorkSize = m_nVectors = 0;
 
 	m_fVDDC = 0.0f;
 }
@@ -45,6 +46,12 @@ GPUSetting::GPUSetting(const GPUSetting& setting)
 	this->m_nOverheatTemp = setting.GetOverHeatTemp();
 	this->m_nCutOffTemp = setting.GetCutOffTemp();	
 	this->m_nIntensity = setting.GetIntensity();
+	this->m_nRawintensity = setting.GetRawIntensity();
+	this->m_nXIntensity = setting.GetXIntensity();
+	this->m_nThreadConcurreny = setting.GetThreadConcurrency();
+	this->m_nLookupGap = setting.GetLookupGap();
+	this->m_nWorkSize = setting.GetWorkSize();
+	this->m_nVectors = setting.GetVectors();
 	this->m_fVDDC = setting.GetVoltage();
 }
 
@@ -69,6 +76,12 @@ GPUSetting& GPUSetting::operator=(const GPUSetting& setting)
 	this->m_nOverheatTemp = setting.GetOverHeatTemp();
 	this->m_nCutOffTemp = setting.GetCutOffTemp();	
 	this->m_nIntensity = setting.GetIntensity();
+	this->m_nRawintensity = setting.GetRawIntensity();
+	this->m_nXIntensity = setting.GetXIntensity();
+	this->m_nThreadConcurreny = setting.GetThreadConcurrency();
+	this->m_nLookupGap = setting.GetLookupGap();
+	this->m_nWorkSize = setting.GetWorkSize();
+	this->m_nVectors = setting.GetVectors();
 	this->m_fVDDC = setting.GetVoltage();
 
 	return *this;

@@ -15,7 +15,7 @@
 
 SKMinerData::SKMinerData() : MinerData()
 {
-
+	this->m_pTarget = NULL;
 }
 
 SKMinerData::SKMinerData(const SKMinerData& minerData) : MinerData(minerData)

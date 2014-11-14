@@ -16,6 +16,15 @@
 #include "../core/util.h"
 #include "../data/MinerData.h"
 
+
+MinerThread::MinerThread()
+{
+	this->m_bBlockFound = this->m_bNewBlock = this->m_bReady = false;
+	this->m_unHashes = 0;
+	this->total_mhashes_done = 0;
+	this->m_pMinerData = NULL;
+}
+
 MinerThread::MinerThread(MinerData* pData)
 {
 	m_pMinerData = pData;

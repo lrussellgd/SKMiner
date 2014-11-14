@@ -4,9 +4,9 @@
 // Author:	Liam Russell (A.K.A. BitSlapper)
 //			djm34
 //
-//			CalculateThreads and SetBufferSize are
-//			based off of code produced from the 
-//			authors of cgminer and sph-sgminer
+//			CalculateThreads is	based off of code 
+//			produced from the authors of 
+//			cgminer and sph-sgminer
 //
 // Copyright:	2014-2015 Liam Russell
 //				2014-2015 djm34	

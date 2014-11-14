@@ -50,11 +50,11 @@ RunOptions::RunOptions(std::map<std::string,std::string> arguments)
 			SetAlgorithm(arguments["-A"]);
 		}
 
-		std::map<std::string,std::string>::iterator connectionIT = arguments.find("--connection");
+		std::map<std::string,std::string>::iterator connectionIT = arguments.find("--connections");
 		std::map<std::string,std::string>::iterator cIT = arguments.find("-C");
 		if(connectionIT != arguments.end())
 		{
-			szConnection = arguments["--connection"];
+			szConnection = arguments["--connections"];
 		}
 		else if(cIT != arguments.end())
 		{
@@ -125,7 +125,6 @@ RunOptions::RunOptions(std::map<std::string,std::string> arguments)
 
 				m_vecConnections.push_back(conn);
 			}
-
 		}
 
 		std::map<std::string,std::string>::iterator engineIT = arguments.find("--gpu-engine");
@@ -775,43 +774,14 @@ RunOptions::RunOptions(std::map<std::string,std::string> arguments)
 		std::map<std::string, std::string>::iterator deviceIT = arguments.find("--devices");
 		std::map<std::string, std::string>::iterator dIT = arguments.find("-D");
 
-		std::string szdevices = "";
 		if (deviceIT != arguments.end())
 		{
-			szdevices = arguments["--devices"];
+			SetDevices(arguments["--devices"]);
 		}
 		else if (dIT != arguments.end())
 		{
-			szdevices = arguments["-D"];
+			SetDevices(arguments["-D"]);
 		}
-
-		if (szdevices.compare("") != 0 && szdevices.compare(" ") != 0)
-		{
-			size_t foundInd = szdevices.find(',');
-			if (foundInd != std::string::npos)
-			{
-				std::vector<std::string> vecStrDevices = split(szdevices, ',');
-				for (size_t devicesInd = 0; devicesInd < vecStrDevices.size(); ++devicesInd)
-				{
-					std::string devicesStr = vecStrDevices[devicesInd];
-					long nDevice = strtol(devicesStr.c_str(), NULL, 0);
-
-					if ((m_vecGPUSettings.size() - 1) >= nDevice)
-					{
-						m_vecGPUSettings[nDevice]->SetIsEnabled(true);
-					}
-				}
-			}
-			else
-			{
-				long nDevice = strtol(szdevices.c_str(), NULL, 0);
-				if ((m_vecGPUSettings.size() - 1) >= nDevice)
-				{
-					m_vecGPUSettings[nDevice]->SetIsEnabled(true);
-				}
-			}
-		}
-
 	}
 }
 

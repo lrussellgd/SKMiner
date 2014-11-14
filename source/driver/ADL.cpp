@@ -17,6 +17,7 @@
 #include <boost/algorithm/string.hpp>
 #include <malloc.h>
 #include <math.h>
+#include "../gpu/BaseGPU.h"
 #include "../gpu/GPUData.h"
 #include "../gpu/ADLGPU.h"
 #include "../config/GPUSetting.h"
@@ -266,7 +267,7 @@ ADL::ADL(std::vector<GPUData*> gpus)
 	adapterId = -1;
     for (int i = 0; i < m_nNumDevices; ++i)
     {
-		if(gpus[i]->GetIsDisabled())
+		if (!gpus[i]->GetGPU()->GetGPUSetting()->GetIsEnabled())
 		{
 			gpus[i]->SetGPUEngine(0);
 			gpus[i]->SetGPUMemclock(0);
@@ -354,9 +355,15 @@ ADL::ADL(std::vector<GPUData*> gpus)
 
 		adlGPU->SetADLODPerformanceLevels(pOdPerformanceLevels);
 
-		if(gpus[i]->GetGPU()->GetGPUSetting()->GetEngineClock() > 0)
+		int engineClck = adlGPU->GetGPUSetting()->GetEngineClock();
+		if (engineClck <= 0 && i != 0)
 		{
-			int setengine = gpus[i]->GetGPU()->GetGPUSetting()->GetEngineClock() * 100;
+			adlGPU->GetGPUSetting()->SetEngineClock(gpus[0]->GetGPU()->GetGPUSetting()->GetEngineClock());
+		}
+
+		if (adlGPU->GetGPUSetting()->GetEngineClock() > 0)
+		{
+			int setengine = adlGPU->GetGPUSetting()->GetEngineClock() * 100;
 
 			for (int j = 0; j < level; j++) 
 			{
@@ -368,10 +375,10 @@ ADL::ADL(std::vector<GPUData*> gpus)
 
 			pOdPerformanceLevels->aLevels[levelInd].iEngineClock = setengine;
 
-			std::cout << "Setting GPU " << i << " engine clock to " << gpus[i]->GetGPU()->GetGPUSetting()->GetEngineClock() << std::endl;
+			std::cout << "Setting GPU " << i << " engine clock to " << adlGPU->GetGPUSetting()->GetEngineClock() << std::endl;
 			ADL_Overdrive5_ODPerformanceLevels_Set(iAdapterIndex, pOdPerformanceLevels);
 
-			gpus[i]->SetGPUEngine(gpus[i]->GetGPU()->GetGPUSetting()->GetEngineClock());
+			gpus[i]->SetGPUEngine(adlGPU->GetGPUSetting()->GetEngineClock());
 
 			adlGPU->GetGPUSetting()->SetMaxEngineSpeed(setengine);
 
@@ -388,9 +395,16 @@ ADL::ADL(std::vector<GPUData*> gpus)
 			}
 		}
 
-		if (gpus[i]->GetGPU()->GetGPUSetting()->GetMemclock() > 0)
+
+		int memClck = adlGPU->GetGPUSetting()->GetMemclock();
+		if (memClck <= 0 && i != 0)
 		{
-			int setmem = gpus[i]->GetGPU()->GetGPUSetting()->GetMemclock() * 100;
+			adlGPU->GetGPUSetting()->SetMemclock(gpus[0]->GetGPU()->GetGPUSetting()->GetMemclock());
+		}
+
+		if (adlGPU->GetGPUSetting()->GetMemclock() > 0)
+		{
+			int setmem = adlGPU->GetGPUSetting()->GetMemclock() * 100;
 
 			for (int j = 0; j < level; j++) 
 			{
@@ -402,17 +416,23 @@ ADL::ADL(std::vector<GPUData*> gpus)
 
 			pOdPerformanceLevels->aLevels[levelInd].iMemoryClock = setmem;
 
-			std::cout << "Setting GPU " << i << " memory clock to " << gpus[i]->GetGPU()->GetGPUSetting()->GetMemclock() << std::endl;
+			std::cout << "Setting GPU " << i << " memory clock to " << adlGPU->GetGPUSetting()->GetMemclock() << std::endl;
 			ADL_Overdrive5_ODPerformanceLevels_Set(iAdapterIndex, pOdPerformanceLevels);
 			
-			gpus[i]->SetGPUMemclock(gpus[i]->GetGPU()->GetGPUSetting()->GetMemclock());
+			gpus[i]->SetGPUMemclock(adlGPU->GetGPUSetting()->GetMemclock());
 
 			adlGPU->SetIsManaged(true);
 		}
 
-		if (gpus[i]->GetGPU()->GetGPUSetting()->GetVoltage() > 0.0f)
+		int voltge = adlGPU->GetGPUSetting()->GetVoltage();
+		if (voltge <= 0 && i != 0)
 		{
-			int setv = (int)(gpus[i]->GetGPU()->GetGPUSetting()->GetVoltage() * 1000.0f);
+			adlGPU->GetGPUSetting()->SetVoltage(gpus[0]->GetGPU()->GetGPUSetting()->GetVoltage());
+		}
+
+		if (adlGPU->GetGPUSetting()->GetVoltage() > 0.0f)
+		{
+			int setv = (int)(adlGPU->GetGPUSetting()->GetVoltage() * 1000.0f);
 
 			for (int j = 0; j < level; j++) 
 			{
@@ -421,18 +441,18 @@ ADL::ADL(std::vector<GPUData*> gpus)
 			}
 			pOdPerformanceLevels->aLevels[levelInd].iVddc = setv;
 
-			std::cout << "Setting GPU " << i << " voltage to " << gpus[i]->GetGPU()->GetGPUSetting()->GetVoltage() << std::endl;
+			std::cout << "Setting GPU " << i << " voltage to " << adlGPU->GetGPUSetting()->GetVoltage() << std::endl;
 			ADL_Overdrive5_ODPerformanceLevels_Set(iAdapterIndex, pOdPerformanceLevels);
 
-			gpus[i]->SetGPUVDDC(gpus[i]->GetGPU()->GetGPUSetting()->GetVoltage());
+			gpus[i]->SetGPUVDDC(adlGPU->GetGPUSetting()->GetVoltage());
 
 			adlGPU->SetIsManaged(true);
 		}
 
 		ADL_Overdrive5_ODPerformanceLevels_Get(iAdapterIndex, 0, pOdPerformanceLevels);
-		adlGPU->GetGPUSetting()->SetEngineClock(pOdPerformanceLevels->aLevels[levelInd].iEngineClock);
-		adlGPU->GetGPUSetting()->SetMemclock(pOdPerformanceLevels->aLevels[levelInd].iMemoryClock);
-		adlGPU->GetGPUSetting()->SetVoltage((float)pOdPerformanceLevels->aLevels[levelInd].iVddc);
+		//adlGPU->GetGPUSetting()->SetEngineClock(pOdPerformanceLevels->aLevels[levelInd].iEngineClock);
+		//adlGPU->GetGPUSetting()->SetMemclock(pOdPerformanceLevels->aLevels[levelInd].iMemoryClock);
+		//adlGPU->GetGPUSetting()->SetVoltage((float)pOdPerformanceLevels->aLevels[levelInd].iVddc);
 		adlGPU->SetBusNumber(m_lpInfo[i].iBusNumber);
 		
 		ADLFanSpeedInfo adlFS = adlGPU->GetADLFanSpeedInfo();
@@ -465,21 +485,37 @@ ADL::ADL(std::vector<GPUData*> gpus)
 		else
 		{
 			adlGPU->SetIsDefFanValid(true);
+			adlGPU->SetADLDefFanSpeedValue(defValue);
+		}		
+
+		int nTargetFan = adlGPU->GetGPUSetting()->GetTargetFan();
+		if (nTargetFan <= 0 && i != 0)
+		{
+			nTargetFan = gpus[0]->GetGPU()->GetGPUSetting()->GetTargetFan();
+			adlGPU->GetGPUSetting()->SetTargetFan(nTargetFan);
 		}
 
-		adlGPU->SetADLDefFanSpeedValue(defValue);
-
-		if (gpus[i]->GetGPUFan() > 0)
+		if (nTargetFan > 0)
 		{
-			SetFanSpeed(gpus[i], gpus[i]->GetGPUFan());
+			if (SetFanSpeed(gpus[i], nTargetFan))
+			{
+				gpus[i]->SetGPUFan(nTargetFan);
+			}
 		}
 		else
 		{
 			//Set an upper limit of 85%
-			gpus[i]->SetGPUFan(85); 
+			//adlGPU->GetGPUSetting()->SetTargetFan(85);
+			gpus[i]->SetGPUFan(85);
 		}
 
 		int nPercentage = adlGPU->GetGPUSetting()->GetPowerTune();
+		if (nPercentage <= 0 && i != 0)
+		{
+			adlGPU->GetGPUSetting()->SetPowerTune(gpus[0]->GetGPU()->GetGPUSetting()->GetPowerTune());
+			nPercentage = adlGPU->GetGPUSetting()->GetPowerTune();
+		}
+
 		int nDummy = 0;
 		
 		adlResult = ADL_Overdrive5_PowerControl_Get(iAdapterIndex, &nPercentage, &nDummy);
@@ -488,55 +524,81 @@ ADL::ADL(std::vector<GPUData*> gpus)
 			std::cout << "ADL_Overdrive5_PowerControl_get Failed!" << std::endl;
 		}
 
-		if (gpus[i]->GetGPUPowerTune() > 0) 
+
+		if (adlGPU->GetGPUSetting()->GetPowerTune() > 0)
 		{
-			ADL_Overdrive5_PowerControl_Set(iAdapterIndex, gpus[i]->GetGPUPowerTune());
+			ADL_Overdrive5_PowerControl_Set(iAdapterIndex, adlGPU->GetGPUSetting()->GetPowerTune());
 			ADL_Overdrive5_PowerControl_Get(iAdapterIndex, &nPercentage, &nDummy);
 
 			adlGPU->GetGPUSetting()->SetPowerTune(nPercentage);
 			adlGPU->SetIsManaged(true);
 		}
 
+		int nTargetTemp = adlGPU->GetGPUSetting()->GetTargetTemp();
+		if (nTargetTemp <= 0 && i != 0)
+		{
+			nTargetTemp = gpus[0]->GetGPU()->GetGPUSetting()->GetTargetTemp();
+			if (nTargetTemp <= 0)
+			{
+				adlGPU->GetGPUSetting()->SetTargetTemp(75);
+			}
+			else
+			{
+				adlGPU->GetGPUSetting()->SetTargetTemp(nTargetTemp);
+			}			
+		}
 
-		if (!(adlGPU->GetGPUSetting()->GetTargetTemp() > 0))
+
+		int nOverHeatTemp = adlGPU->GetGPUSetting()->GetOverHeatTemp();
+		if (nOverHeatTemp <= 0 && i != 0)
 		{
-			adlGPU->GetGPUSetting()->SetTargetTemp(75);
-		}
-		if (!(adlGPU->GetGPUSetting()->GetOverHeatTemp() > 0))
-		{
-			adlGPU->GetGPUSetting()->SetOverHeatTemp(85);
-		}
-		if (!(adlGPU->GetGPUSetting()->GetCutOffTemp() > 0))
-		{
-			adlGPU->GetGPUSetting()->SetCutOffTemp(95);
+			nOverHeatTemp = gpus[0]->GetGPU()->GetGPUSetting()->GetOverHeatTemp();
+			if (nOverHeatTemp <= 0)
+			{
+				adlGPU->GetGPUSetting()->SetOverHeatTemp(85);
+			}
+			else
+			{
+				adlGPU->GetGPUSetting()->SetOverHeatTemp(nOverHeatTemp);
+			}
 		}
 
-		//change to auto fan bool
-		if(true)
+		int nCutOffTemp = adlGPU->GetGPUSetting()->GetCutOffTemp();
+		if (nCutOffTemp <= 0 && i != 0)
+		{
+			nCutOffTemp = gpus[0]->GetGPU()->GetGPUSetting()->GetCutOffTemp();
+			if (nCutOffTemp <= 0)
+			{
+				adlGPU->GetGPUSetting()->SetCutOffTemp(95);
+			}
+			else
+			{
+				adlGPU->GetGPUSetting()->SetCutOffTemp(nCutOffTemp);
+			}
+		}
+
+		if (adlGPU->GetGPUSetting()->GetIsAutoFan())
 		{
 			int nominal = 50;
 
-			if (nominal > gpus[i]->GetGPUFan())
+			int nTargFan = adlGPU->GetGPUSetting()->GetTargetFan();
+
+			if (nominal > nTargFan)
 			{
-				nominal = gpus[i]->GetGPUFan();
+				nominal = nTargFan;
 			}
 
 			if (nominal < gpus[i]->GetMinFan())
 			{
 				nominal = gpus[i]->GetMinFan();
 			}
-		
-			adlGPU->GetGPUSetting()->SetIsAutoFan(true);
+			
 			adlGPU->SetIsManaged(true);
-
-			SetFanSpeed(gpus[i], nominal);
+			//SetFanSpeed(gpus[i], nominal);
 		}
 
-
-		//set to auto engine bool
-		if (true) 
+		if (adlGPU->GetGPUSetting()->GetIsAutoEngine())
 		{
-			adlGPU->GetGPUSetting()->SetIsAutoEngine(true);
 			adlGPU->SetIsManaged(true);
 		}
 

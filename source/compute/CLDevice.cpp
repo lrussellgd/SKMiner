@@ -17,6 +17,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 CLDevice::CLDevice() : BaseComputeDevice()
 {
+	this->m_unIsEndianLittle = this->m_unAddressBits = this->m_unMaxClockFrequency = this->m_unPreferredVectorWidth = 0;
+	this->m_ullMemorySize = this->m_ullDeviceGlobalMemSize = 0;
+	this->m_stComputeShaders = this->m_stMaxWorkGroupSize = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -106,6 +109,8 @@ CLDevice& CLDevice::operator = (const CLDevice& device)
 	this->m_ullDeviceGlobalMemSize = device.GetDeviceGlobalMemSize();
 	this->m_unVendorID = device.GetVendorID();
 	this->m_unIsEndianLittle = device.GetIsLitteEndian();
+
+	return *this;
 }
 
 

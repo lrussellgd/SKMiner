@@ -15,6 +15,7 @@
 
 ServerConnection::ServerConnection()
 {
+	this->nThreads = this->nTimeout = 0;
 }
 
 ServerConnection& ServerConnection::operator=(const ServerConnection& serverConnection)
