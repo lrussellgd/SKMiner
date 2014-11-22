@@ -181,6 +181,8 @@ std::vector<GPUData*> CreateOpenCLDevices(RunOptions* options)
 				cl::Device currDevice = amdDevices[devIndex];
 
 				CLDevice* amdDev = new CLDevice(currDevice);
+				amdDev->SetPlatform(plat);
+				amdDev->SetDeviceIndex(devIndex);
 
 				cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)plat(), 0 };
 				cl_int status = -1;
@@ -392,4 +394,184 @@ void SetThreadConcurrency(GPUData* pGPU)
 			}
 		}
 	}
+}
+
+
+GPUData* CreateNewOpenCLDevice(GPUData* pMainGPUThread)
+{
+	CLDevice* pCLDevice = dynamic_cast<CLDevice*>(pMainGPUThread->GetDevice());
+	if (!pCLDevice)
+	{
+		return NULL;
+	}
+
+	cl::Platform plat = pCLDevice->GetPlatform();	
+
+	std::stringstream ssName;
+	ssName << ".\\resources\\kernel\\" << pCLDevice->GetAlgorithm() << ".cl";
+
+	std::ifstream programFile(ssName.str());
+	std::string programString(std::istreambuf_iterator<char>(programFile), (std::istreambuf_iterator<char>()));
+	cl::Program::Sources source(1, std::make_pair(programString.c_str(), programString.length() + 1));
+
+
+	std::vector<cl::Device> amdDevices;
+	plat.getDevices(CL_DEVICE_TYPE_GPU, &amdDevices);
+
+	size_t devIndex = pCLDevice->GetDeviceIndex();
+
+	if ((amdDevices.size() - 1) < devIndex)
+	{
+		return NULL;
+	}
+
+	GPUData* pNewGPU = new GPUData();
+
+	pNewGPU->SetIsActive(pMainGPUThread->GetIsActive());
+	pNewGPU->SetIsDisabled(pMainGPUThread->GetIsDisabled());
+	pNewGPU->SetID(pMainGPUThread->GetID());
+	pNewGPU->SetDeviceID(pMainGPUThread->GetDeviceID());
+	pNewGPU->SetGPUEngine(pMainGPUThread->GetGPUEngine());
+	pNewGPU->SetMinEngine(pMainGPUThread->GetMinEngine());
+	pNewGPU->SetGPUFan(pMainGPUThread->GetGPUFan());
+	pNewGPU->SetMinFan(pMainGPUThread->GetMinFan());
+	pNewGPU->SetGPUMemclock(pMainGPUThread->GetGPUMemclock());
+	pNewGPU->SetGPUMemDiff(pMainGPUThread->GetGPUMemDiff());
+	pNewGPU->SetGPUPowerTune(pMainGPUThread->GetGPUPowerTune());
+	pNewGPU->SetGPUEngineExit(pMainGPUThread->GetGPUEngineExit());
+	pNewGPU->SetGPUMemclockExit(pMainGPUThread->GetGPUMemclockExit());
+	pNewGPU->SetHashes(pMainGPUThread->GetHashes());
+	pNewGPU->SetMaxHashes(pMainGPUThread->GetMaxHashes());
+	pNewGPU->SetWorksize(pMainGPUThread->GetGPUVDDC());
+	pNewGPU->SetGPUTemp(pMainGPUThread->GetGPUTemp());
+	pNewGPU->SetGPUVDDC(pMainGPUThread->GetWorkSize());
+	pNewGPU->SetName(pMainGPUThread->GetName());
+	pNewGPU->SetDevicePath(pMainGPUThread->GetDevicePath());
+	pNewGPU->SetGPU(pMainGPUThread->GetGPU()->DeepCopy());
+
+
+	cl::Device newCLDevice = amdDevices[devIndex];
+
+	CLDevice* pNewCLDevice = new CLDevice(newCLDevice);
+	pNewCLDevice->SetPlatform(plat);
+	pNewCLDevice->SetAlgorithm(pCLDevice->GetAlgorithm());
+
+	cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)plat(), 0 };
+	cl_int status = -1;
+
+	cl::Context amdContext(CL_DEVICE_TYPE_GPU, cps, NULL, NULL, &status);
+	pNewCLDevice->SetContext(amdContext);
+
+	cl::Program amdProgram(pNewCLDevice->GetContext(), source);
+
+	cl::CommandQueue commQueue(pNewCLDevice->GetContext(), pNewCLDevice->GetDeviceID(), 0, &status);
+	pNewCLDevice->SetCommandQueue(commQueue);
+
+
+
+	std::stringstream csoptions;
+	csoptions << "-D LOOKUP_GAP=" << pNewGPU->GetGPU()->GetGPUSetting()->GetLookupGap();
+	csoptions << " -D CONCURRENT_THREADS=" << pNewGPU->GetGPU()->GetGPUSetting()->GetThreadConcurrency();
+	csoptions << " -D WORKSIZE=" << pNewGPU->GetGPU()->GetGPUSetting()->GetWorkSize();
+	csoptions << " -D VECTORS=" << pNewGPU->GetGPU()->GetGPUSetting()->GetVectors();
+	csoptions << " -D WORKVEC=" << pNewGPU->GetGPU()->GetGPUSetting()->GetWorkSize() * pNewGPU->GetGPU()->GetGPUSetting()->GetVectors();
+
+	std::string devInfo = newCLDevice.getInfo<CL_DEVICE_EXTENSIONS>();
+
+
+	std::string devVersion = newCLDevice.getInfo<CL_DEVICE_VERSION>();
+	boost::iterator_range<std::string::iterator> devVersionRange = boost::algorithm::ifind_first(devVersion, "OpenCL 1.0");
+	if (devVersionRange.empty())
+	{
+		devVersionRange = boost::algorithm::ifind_first(devVersion, "OpenCL 1.1");
+		if (devVersionRange.empty())
+		{
+			std::string name = pNewCLDevice->GetName();
+
+			//OpenCL 1.2
+			boost::iterator_range<std::string::iterator> bitAlignRange = boost::algorithm::ifind_first(devInfo, "cl_amd_media_ops");
+			if (!bitAlignRange.empty())
+			{
+				csoptions << " -D BITALIGN";
+
+				if (name.compare("Cedar") == 0 || name.compare("Redwood") == 0 || name.compare("Juniper") == 0 ||
+					name.compare("Cypress") == 0 || name.compare("Hemlock") == 0 || name.compare("Caicos") == 0 ||
+					name.compare("Turks") == 0 || name.compare("Barts") == 0 || name.compare("Cayman") == 0 ||
+					name.compare("Antilles") == 0 || name.compare("Wrestler") == 0 || name.compare("Zacate") == 0 ||
+					name.compare("WinterPark") == 0)
+				{
+					csoptions << " -D BFI_INT";
+				}
+			}
+
+		}
+	}
+	else
+	{
+		csoptions << " -D OCL1";
+	}
+
+	csoptions << " -D GOFFSET";
+
+	std::string szCompilerOptions = csoptions.str();
+
+	try
+	{
+		std::vector<cl::Device> oneDevice;
+		oneDevice.push_back(pNewCLDevice->GetDeviceID());
+
+		cl_int result = amdProgram.build(oneDevice, szCompilerOptions.c_str());
+	}
+	catch (cl::Error e)
+	{
+		std::cout << e.what() << ": Error code " << e.err() << std::endl;
+
+		std::vector<cl::Device> devices = amdProgram.getInfo<CL_PROGRAM_DEVICES>();
+		const cl::Device dev = devices[0];
+
+		std::string build_log;
+		cl_int err = amdProgram.getBuildInfo(dev, CL_PROGRAM_BUILD_LOG, &build_log);
+
+		std::cout << "Start Build Log: " << std::endl;
+		std::cout << build_log << std::endl;
+		std::cout << "End Build Log: " << std::endl;
+	}
+
+	std::vector<cl::Kernel> allKernels;
+	amdProgram.createKernels(&allKernels);
+	for (size_t kernelIndex = 0; kernelIndex < allKernels.size(); ++kernelIndex)
+	{
+		CLKernel* pKernel = new CLKernel();
+
+		std::string kernelName = allKernels[kernelIndex].getInfo<CL_KERNEL_FUNCTION_NAME>();
+
+
+		size_t wrkSize;
+		allKernels[kernelIndex].getWorkGroupInfo(newCLDevice, CL_KERNEL_WORK_GROUP_SIZE, &wrkSize);
+
+		size_t prefWrkSize;
+		allKernels[kernelIndex].getWorkGroupInfo(newCLDevice, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, &prefWrkSize);
+
+		size_t reqWGS[3];
+		allKernels[kernelIndex].getWorkGroupInfo(newCLDevice, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, &reqWGS);
+
+		pKernel->SetName(kernelName);
+		pKernel->SetKernel(allKernels[kernelIndex]);
+		if (pNewGPU->GetGPU()->GetGPUSetting()->GetWorkSize() < wrkSize)
+		{
+			pKernel->SetWorksize(pNewGPU->GetGPU()->GetGPUSetting()->GetWorkSize());
+		}
+		else
+		{
+			pKernel->SetWorksize(wrkSize);
+		}
+		pKernel->SetPrefWorkSize(prefWrkSize);
+		pKernel->SetReqdWorkSizes(reqWGS);
+
+		pNewCLDevice->SetKernel(kernelName, pKernel);
+	}
+
+	pNewGPU->SetDevice(pNewCLDevice);
+
+	return pNewGPU;
 }

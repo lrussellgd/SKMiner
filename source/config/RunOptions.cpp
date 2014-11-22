@@ -835,19 +835,22 @@ RunOptions::~RunOptions()
 {
 	for(size_t index = 0; index < m_vecConnections.size(); ++index)
 	{
-		if (m_vecConnections[index])
-		{
-			delete(m_vecConnections[index]);
-		}
-		
+		ConfigConnection* pConfCon = m_vecConnections[index];
+		if (pConfCon)
+		{			
+			delete(pConfCon);
+			pConfCon = NULL;
+		}		
 	}
 	m_vecConnections.clear();
 
 	for(size_t index = 0; index < m_vecGPUSettings.size(); ++index)
 	{
-		if (m_vecGPUSettings[index])
+		GPUSetting* pSetting = m_vecGPUSettings[index];
+		if (pSetting)
 		{
-			delete(m_vecGPUSettings[index]);
+			delete(pSetting);
+			pSetting = NULL;
 		}
 	}
 	m_vecGPUSettings.clear();

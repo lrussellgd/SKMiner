@@ -25,13 +25,13 @@
 #include <time.h>
 #include "../compute/CLStructs.h"
 #include "../compute/CLKernel.h"
+#include "../compute/CLMemory.h"
 #include "../gpu/BaseGPU.h"
 #include "../gpu/ADLGPU.h"
 #include "../config/GPUSetting.h"
 #include "../data/SKMinerData.h"
 #include "../core/bignum.h"
 #include "../core/CBlock.h"
-#include <boost/thread/mutex.hpp>
 
 #define ROL64(x, n)        (((x) << (n)) | ((x) >> (64 - (n))))
 
@@ -125,12 +125,7 @@ bool sk1024_kernel_djm2(MinerData* pMinerData)
 		return false;
 	}
 
-	cl_mem NonceBuffer; // nonce candidate
-	cl_mem DataMsg;  // input data msg
-	//cl_mem HashBuffer; // communication between kernel (not used in current one kernel setting)
-	cl_mem HvBuffer; // h state after 1st Skein loop
 	cl_ulong StartNonce = ((uint64_t*)nNonce)[0];  //starting nonce value
-
 
 	uint1024 target = ((SKMinerData*)pMinerData)->GetTarget()->getuint1024();
 	cl_ulong TheTarget = ((unsigned long long*)&target)[15];  //target value, we take only  
@@ -142,7 +137,7 @@ bool sk1024_kernel_djm2(MinerData* pMinerData)
 	SkeinFirstRound(pData, SkeinC);
 
 	memcpy(SkeinHv, SkeinC, sizeof(unsigned long long) * 17);
-	
+
 	free(SkeinC);
 
 	cl_int error = CL_SUCCESS;
@@ -165,26 +160,14 @@ bool sk1024_kernel_djm2(MinerData* pMinerData)
 
 	cl_context TheContext = clDevice->GetContext()();
 
-	NonceBuffer = clCreateBuffer(TheContext, CL_MEM_READ_WRITE, sizeof(cl_ulong), NULL, &error);
-	if (error != 0) 
-	{ 
-		std::cout << "problem creating NonceBuffer"; 
-	}
+	CLMemory* pNonceMemoryBuffer = skeinProcess->GetMemoryBuffer("NonceBuffer");
+	CLMemory* pDataMsgMemoryBuffer = skeinProcess->GetMemoryBuffer("DataMsg");
+	CLMemory* pHvMemoryBuffer = skeinProcess->GetMemoryBuffer("HvBuffer");
 
-	DataMsg = clCreateBuffer(TheContext, CL_MEM_READ_ONLY, sizeof(cl_ulong)* 27, NULL, &error);
-	if (error != 0) 
-	{ 
-		std::cout << "problem creating DataMsg"; 
-	}
 
-	//HashBuffer = clCreateBuffer(TheContext, CL_MEM_READ_WRITE, buffSize*sizeof(cl_ulong)* 16, NULL, &error);
-	//if (error != 0) { std::cout << "problem creating HashBuffer"; }
-
-	HvBuffer = clCreateBuffer(TheContext, CL_MEM_READ_ONLY, sizeof(cl_ulong)* 17, NULL, &error);
-	if (error != 0) 
-	{ 
-		std::cout << "problem creating HvBuffer"; 
-	}
+	cl_mem NonceBuffer = pNonceMemoryBuffer->GetBuffer();
+	cl_mem DataMsg = pDataMsgMemoryBuffer->GetBuffer();
+	cl_mem HvBuffer = pHvMemoryBuffer->GetBuffer();
 
 	cl::Kernel SkeinProcess = skeinProcess->GetKernel();
 
@@ -197,20 +180,18 @@ bool sk1024_kernel_djm2(MinerData* pMinerData)
 
 	cl_command_queue TheQueue = clDevice->GetCommandQueue()();
 
-	clEnqueueWriteBuffer(TheQueue, DataMsg, CL_TRUE, 0, sizeof(cl_ulong)* 27, pData, 0, NULL, NULL);
-	clEnqueueWriteBuffer(TheQueue, NonceBuffer, CL_TRUE, 0, sizeof(cl_ulong), 0, 0, NULL, NULL);
-	clEnqueueWriteBuffer(TheQueue, HvBuffer, CL_TRUE, 0, sizeof(cl_ulong)* 17, SkeinHv, 0, NULL, NULL);
+	clEnqueueWriteBuffer(TheQueue, DataMsg, CL_TRUE, 0, pDataMsgMemoryBuffer->GetBufferSize(), pData, 0, NULL, NULL);
+	clEnqueueWriteBuffer(TheQueue, NonceBuffer, CL_TRUE, 0, pNonceMemoryBuffer->GetBufferSize(), 0, 0, NULL, NULL);
+	clEnqueueWriteBuffer(TheQueue, HvBuffer, CL_TRUE, 0, pHvMemoryBuffer->GetBufferSize(), SkeinHv, 0, NULL, NULL);
 
 	clEnqueueNDRangeKernel(TheQueue, SkeinProcess(), 1, NULL, globalRange, localRange, 0, NULL, NULL);
 
 	unsigned long long TheNonce[1] = { 0xffffffffffffffffull };
-	clEnqueueReadBuffer(TheQueue, NonceBuffer, CL_FALSE, 0, sizeof(cl_ulong), TheNonce, 0, NULL, NULL);
+	clEnqueueReadBuffer(TheQueue, NonceBuffer, CL_FALSE, 0, pNonceMemoryBuffer->GetBufferSize(), TheNonce, 0, NULL, NULL);
 
 	clDevice->GetCommandQueue().finish();
 
-
 	bool isFound = false;
-	
 
 	if (TheNonce[0])
 	{
@@ -220,7 +201,7 @@ bool sk1024_kernel_djm2(MinerData* pMinerData)
 
 		isFound = true;
 	}
-	else 
+	else
 	{
 		((uint64_t*)nNonce)[0] += globalSize; // no Nonce found, just set nNonce to maxhashes... need to make sure this logic doesn't skip nonce
 		hashes = (uint32_t)globalSize;
@@ -229,8 +210,13 @@ bool sk1024_kernel_djm2(MinerData* pMinerData)
 	((SKMinerData*)pMinerData)->GetGPUData()->SetHashes(hashes);
 	((SKMinerData*)pMinerData)->GetBlock()->SetNonce(((unsigned long long)nNonce[0] | (((unsigned long long)nNonce[1]) << 32)));
 
+	if (isFound)
+	{
+		clEnqueueWriteBuffer(TheQueue, NonceBuffer, CL_FALSE, 0, pNonceMemoryBuffer->GetBufferSize(), pNonceMemoryBuffer->GetEmptyBuffer(), 0, NULL, NULL);
+		clDevice->GetCommandQueue().finish();
+	}
+
 	return isFound;
-	
 }
 
 static void Round1024_host(uint64_t &p0, uint64_t &p1, uint64_t &p2, uint64_t &p3, uint64_t &p4, uint64_t &p5, uint64_t &p6, uint64_t &p7,

@@ -18,7 +18,6 @@ namespace LLP
 {
 	Outbound::Outbound() : Connection()
 	{
-
 	}
 
 	Outbound::Outbound(std::string ip, std::string port) : Connection()
@@ -29,7 +28,6 @@ namespace LLP
 
 	Outbound::Outbound(const Outbound& outbound)
 	{
-
 	}
 	
 	Outbound& Outbound::operator=(const Outbound& outbound)
@@ -64,9 +62,16 @@ namespace LLP
 			tcp::resolver 			  RESOLVER(IO_SERVICE);
 			tcp::resolver::query      QUERY(tcp::v4(), IP.c_str(), PORT.c_str());
 			tcp::resolver::iterator   ADDRESS = RESOLVER.resolve(QUERY);
-				
-			this->SOCKET = Socket_t(new tcp::socket(IO_SERVICE));
-			this->SOCKET->connect(*ADDRESS, this->ERROR_HANDLE);
+			
+			if (this->SOCKET)
+			{
+				delete(this->SOCKET);
+				this->SOCKET = NULL;
+			}
+
+			this->SOCKET = new Socket_t(new tcp::socket(IO_SERVICE));
+
+			this->SOCKET->get()->connect(*ADDRESS, this->ERROR_HANDLE);
 				
 			if(Errors())
 			{
@@ -88,5 +93,26 @@ namespace LLP
 			this->Disconnect(); 
 			return false;
 		}
+	}
+
+	void Outbound::Disconnect()
+	{
+		if (!CONNECTED)
+			return;
+
+		try
+		{
+			if (this->SOCKET)
+			{
+				SOCKET->get()->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ERROR_HANDLE);
+				SOCKET->get()->close();
+
+				delete(this->SOCKET);
+				this->SOCKET = NULL;
+			}
+		}
+		catch (...){}
+
+		CONNECTED = false;
 	}
 }

@@ -32,7 +32,7 @@ namespace LLP
 		// Basic Connection Variables.
 		Timer*        TIMER;
 		Error_t       ERROR_HANDLE;
-		Socket_t      SOCKET;
+		Socket_t*      SOCKET;
 		
 		//Connected Flag.
 		bool CONNECTED;
@@ -59,7 +59,7 @@ namespace LLP
 	public:
 
 		Connection();
-		Connection(Socket_t SOCKET_IN, DDOS_Filter* DDOS_IN);
+		Connection(Socket_t* SOCKET_IN, DDOS_Filter* DDOS_IN);
 		Connection(const Connection& connection);
 		Connection& operator=(const Connection& connection);
 		~Connection();
@@ -94,11 +94,11 @@ namespace LLP
 		//Accessors
 		///////////////////////////////////////////////////////////////////////////////
 		const bool			GetIsConnected()	const	{	return this->CONNECTED;				}
-		const Packet*		GetIncoming()		const	{	return this->INCOMING;				}
-		const Timer*		GetTimer()			const	{	return this->TIMER;					}
-		const DDOS_Filter*	GetDDOSFilter()		const	{	return this->DDOS;					}
+		Packet*				GetIncoming()		const	{	return this->INCOMING;				}
+		Timer*				GetTimer()			const	{	return this->TIMER;					}
+		DDOS_Filter*		GetDDOSFilter()		const	{	return this->DDOS;					}
 		const Error_t&		GetErrorHandle()	const	{	return this->ERROR_HANDLE;			}
-		const Socket_t&		GetSocket()			const	{	return this->SOCKET;				}
+		Socket_t*			GetSocket()			const	{	return this->SOCKET;				}
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -109,7 +109,7 @@ namespace LLP
 		void	SetTimer(Timer* timer)					{	this->TIMER = timer;				}
 		void	SetDDOSFilter(DDOS_Filter* filter)		{	this->DDOS = filter;				}
 		void	SetErrorHandle(Error_t errorHandle)		{	this->ERROR_HANDLE = errorHandle;	}
-		void	SetSocket(Socket_t socket)				{	this->SOCKET = socket;				}
+		void	SetSocket(Socket_t* socket)				{	this->SOCKET = socket;				}
 	};
 }
 

@@ -42,13 +42,6 @@ BaseComputeDevice& BaseComputeDevice::operator=(const BaseComputeDevice& device)
 	return *this;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//Destructor
-///////////////////////////////////////////////////////////////////////////////
-BaseComputeDevice::~BaseComputeDevice()
-{
-}
-
 BaseComputeDevice* BaseComputeDevice::Clone()
 {
 	BaseComputeDevice* pBCD = new BaseComputeDevice();

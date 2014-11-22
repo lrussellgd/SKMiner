@@ -22,9 +22,10 @@ namespace LLP
 		this->INCOMING = new Packet();
 		this->INCOMING->SetNull();
 		this->TIMER = new Timer();
+		this->SOCKET = new Socket_t();
 	}
 
-	Connection::Connection(Socket_t SOCKET_IN, DDOS_Filter* DDOS_IN)
+	Connection::Connection(Socket_t* SOCKET_IN, DDOS_Filter* DDOS_IN)
 	{
 		this->SOCKET = SOCKET_IN;
 		this->DDOS = new DDOS_Filter(*DDOS_IN);
@@ -58,20 +59,29 @@ namespace LLP
 	
 	Connection::~Connection()
 	{
+		if (SOCKET)
+		{
+			delete(SOCKET);
+			SOCKET = NULL;
+		}
+
 		if(INCOMING)
 		{
 			delete(INCOMING);
+			INCOMING = NULL;
 		}
 
 		if(TIMER)
 		{
 			TIMER->Stop();
 			delete(TIMER);
+			TIMER = NULL;
 		}
 
 		if(DDOS)
 		{
 			delete(DDOS);
+			DDOS = NULL;
 		}
 	}
 
@@ -90,7 +100,12 @@ namespace LLP
 			return;
 				
 		/** Handle Reading Packet Type Header. **/
-		if(SOCKET->available() > 0 && INCOMING->GetHeader() == 255)
+		if (!SOCKET)
+		{
+			return;
+		}
+
+		if(SOCKET->get()->available() > 0 && INCOMING->GetHeader() == 255)
 		{
 			std::vector<unsigned char> HEADER(1, 255);
 			if(Read(HEADER, 1) == 1)
@@ -103,7 +118,7 @@ namespace LLP
 		{
 			
 			/** Handle Reading Packet Length Header. **/
-			if(SOCKET->available() >= 4 && INCOMING->GetLength() == 0)
+			if (SOCKET->get()->available() >= 4 && INCOMING->GetLength() == 0)
 			{
 				std::vector<unsigned char> BYTES(4, 0);
 				if(Read(BYTES, 4) == 4)
@@ -116,7 +131,7 @@ namespace LLP
 			}
 					
 			/** Handle Reading Packet Data. **/
-			unsigned int nAvailable = (unsigned int)SOCKET->available();
+			unsigned int nAvailable = (unsigned int)SOCKET->get()->available();
 			if(nAvailable > 0 && INCOMING->GetLength() > 0 && INCOMING->GetData().size() < INCOMING->GetLength())
 			{
 				std::vector<unsigned char> DATA( std::min(nAvailable, (unsigned int)(INCOMING->GetLength() - INCOMING->GetData().size())), 0);
@@ -150,8 +165,14 @@ namespace LLP
 				
 		try
 		{
-			SOCKET-> shutdown(boost::asio::ip::tcp::socket::shutdown_both, ERROR_HANDLE);
-			SOCKET-> close();
+			if (!SOCKET)
+			{
+				CONNECTED = false;
+				return;
+			}
+
+			SOCKET->get()->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ERROR_HANDLE);
+			SOCKET->get()->close();
 		}
 		catch(...){}
 			
@@ -160,12 +181,12 @@ namespace LLP
 
 	size_t Connection::Read(std::vector<unsigned char> &DATA, size_t nBytes) 
 	{ 
-		TIMER->Reset(); return  boost::asio::read(*SOCKET, boost::asio::buffer(DATA, nBytes), ERROR_HANDLE); 
+		TIMER->Reset(); return  boost::asio::read(*SOCKET->get(), boost::asio::buffer(DATA, nBytes), ERROR_HANDLE); 
 	}
 
 	void Connection::Write(std::vector<unsigned char> DATA) 
 	{	
-		TIMER->Reset(); boost::asio::write(*SOCKET, boost::asio::buffer(DATA, DATA.size()), ERROR_HANDLE); 
+		TIMER->Reset(); boost::asio::write(*SOCKET->get(), boost::asio::buffer(DATA, DATA.size()), ERROR_HANDLE); 
 	}
 
 	bool Connection::Errors()

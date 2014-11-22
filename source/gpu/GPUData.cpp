@@ -12,7 +12,7 @@
 #include "GPUData.h"
 #include "BaseGPU.h"
 #include "../compute/BaseComputeDevice.h"
-
+#include "../compute/CLDevice.h"
 ///////////////////////////////////////////////////////////////////////////////
 //Constructor
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,11 +101,13 @@ GPUData::~GPUData()
 	if(m_pGPU)
 	{
 		delete(m_pGPU);
+		m_pGPU = NULL;
 	}
 
 	if(m_pDevice)
 	{
 		delete(m_pDevice);
+		m_pDevice = NULL;
 	}
 }
 

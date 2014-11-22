@@ -17,6 +17,7 @@ class GPUData;
 class RunOptions;
 
 std::vector<GPUData*> CreateOpenCLDevices(RunOptions* options);
+GPUData* CreateNewOpenCLDevice(GPUData* pMainGPUThread);
 
 void SetThreadConcurrency(GPUData* pGPU);
 

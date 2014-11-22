@@ -51,7 +51,7 @@ private:
 	int										m_nOverdriveEnabled;
 	int										m_nOverdriveVersion;
 
-	boost::mutex							m_bstADLLock;
+	boost::mutex*							m_bstADLLock;
 
 	ADL_MAIN_CONTROL_CREATE					ADL_Main_Control_Create;
 	ADL_MAIN_CONTROL_DESTROY				ADL_Main_Control_Destroy;

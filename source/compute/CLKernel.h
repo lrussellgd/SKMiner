@@ -15,6 +15,9 @@
 #include <string>
 
 #include "../base/IPrototype.h"
+#include <map>
+
+class CLMemory;
 
 class CLKernel : public IPrototype
 {
@@ -27,6 +30,8 @@ private:
 	size_t m_pReqdWorkGroupSizes[3];
 
 	cl::Kernel m_clKernel;
+
+	std::map<std::string,CLMemory*> m_mapMemBuffers;
 
 	size_t m_stGlobalWorkGroupSize;
 	size_t m_stLocalWorkGroupSize;
@@ -60,26 +65,27 @@ public:
 	///////////////////////////////////////////////////////////////////////////////
 	//Accessors
 	///////////////////////////////////////////////////////////////////////////////
-	const size_t&				GetWorksize()					const						{	return this->m_unWorkSize;						}
-	const size_t&				GetPrefWorkSize()				const						{	return this->m_unPrefWorkSize;					}
-	const size_t&				GetGlobalWorkGroupSize()		const						{	return this->m_stGlobalWorkGroupSize;			}		
-	const size_t&				GetLocalWorkGroupSize()			const						{	return this->m_stLocalWorkGroupSize;			}
-	const size_t*				GetReqdWorkGroupSizes()			const						{	return this->m_pReqdWorkGroupSizes;				}	
-	const cl::Kernel&			GetKernel()						const						{	return this->m_clKernel;						}	
-	const std::string&			GetName()						const						{	return this->m_szName;							}
-	
+	const size_t&				GetWorksize()						const						{	return this->m_unWorkSize;						}
+	const size_t&				GetPrefWorkSize()					const						{	return this->m_unPrefWorkSize;					}
+	const size_t&				GetGlobalWorkGroupSize()			const						{	return this->m_stGlobalWorkGroupSize;			}		
+	const size_t&				GetLocalWorkGroupSize()				const						{	return this->m_stLocalWorkGroupSize;			}
+	const size_t*				GetReqdWorkGroupSizes()				const						{	return this->m_pReqdWorkGroupSizes;				}	
+	const cl::Kernel&			GetKernel()							const						{	return this->m_clKernel;						}	
+	const std::string&			GetName()							const						{	return this->m_szName;							}
+	CLMemory*					GetMemoryBuffer(const std::string& bufferName)					{	return this->m_mapMemBuffers[bufferName];		}
 
 
 	///////////////////////////////////////////////////////////////////////////////
 	//Mutators
 	///////////////////////////////////////////////////////////////////////////////
-	void						SetKernel(const cl::Kernel& clKernel)						{	this->m_clKernel = clKernel;					}
-	void						SetName(const std::string szName)							{	this->m_szName = szName;						}
-	void						SetWorksize(const size_t& unWorksize)						{	this->m_unWorkSize = unWorksize;				}
-	void						SetPrefWorkSize(const size_t& unPrefWorkSize)				{	this->m_unPrefWorkSize = unPrefWorkSize;		}
-	void						SetReqdWorkSizes(const size_t* pReqdWorkSizes)				{   this->m_pReqdWorkGroupSizes[0] = pReqdWorkSizes[0]; this->m_pReqdWorkGroupSizes[1] = pReqdWorkSizes[1]; this->m_pReqdWorkGroupSizes[2] = pReqdWorkSizes[2]; }
-	void						SetGlobalWorkGroupSize(const size_t& stGlobalSize)			{	this->m_stGlobalWorkGroupSize = stGlobalSize;	}
-	void						SetLocalWorkGroupSize(const size_t& stLocalSize)			{	this->m_stLocalWorkGroupSize = stLocalSize;		}
+	void						SetKernel(const cl::Kernel& clKernel)										{	this->m_clKernel = clKernel;					}
+	void						SetName(const std::string szName)											{	this->m_szName = szName;						}
+	void						SetWorksize(const size_t& unWorksize)										{	this->m_unWorkSize = unWorksize;				}
+	void						SetPrefWorkSize(const size_t& unPrefWorkSize)								{	this->m_unPrefWorkSize = unPrefWorkSize;		}
+	void						SetReqdWorkSizes(const size_t* pReqdWorkSizes)								{   this->m_pReqdWorkGroupSizes[0] = pReqdWorkSizes[0]; this->m_pReqdWorkGroupSizes[1] = pReqdWorkSizes[1]; this->m_pReqdWorkGroupSizes[2] = pReqdWorkSizes[2]; }
+	void						SetGlobalWorkGroupSize(const size_t& stGlobalSize)							{	this->m_stGlobalWorkGroupSize = stGlobalSize;	}
+	void						SetLocalWorkGroupSize(const size_t& stLocalSize)							{	this->m_stLocalWorkGroupSize = stLocalSize;		}
+	void						SetMemoryBuffer(const std::string& bufferName, CLMemory* memBuffer)			{	this->m_mapMemBuffers[bufferName] = memBuffer;	}
 };
 
 

@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////
-// File:	MinerData.h
+// File:	CLMemory.h
 //
 // Author:	Liam Russell (A.K.A. BitSlapper)
 //
@@ -8,66 +8,66 @@
 // License:	GNU GENERAL PUBLIC LICENSE V3
 //////////////////////////////////////////////
 
-#ifndef _MINERDATA_H
-#define _MINERDATA_H
+#ifndef _CLMEMORY_H_
+#define _CLMEMORY_H_
 
-#include <string>
-
+#include <CL/cl.hpp>
 #include "../base/IPrototype.h"
 
-namespace Core
+
+class CLMemory : public IPrototype
 {
-	class CBlock;
-}
+private:
 
-class GPUData;
-
-class MinerData : public IPrototype
-{
-
-protected:
-
-	Core::CBlock* m_pBLOCK;
-	GPUData* m_pGPUData;	
+	cl_mem m_clMemBuffer;
+	cl_mem_flags m_clmfType;
+	size_t m_stBufferSize;
+	std::string m_szBufferName;
+	void* m_pEmptyBuffer;
 
 public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	//Constructor
 	///////////////////////////////////////////////////////////////////////////////
-	MinerData();
+	CLMemory();
 
 	///////////////////////////////////////////////////////////////////////////////
 	//Copy Constructor
 	///////////////////////////////////////////////////////////////////////////////
-	MinerData(const MinerData& minerData);
+	CLMemory(const CLMemory& memory);
 
 	///////////////////////////////////////////////////////////////////////////////
 	//Assignment Operator
 	///////////////////////////////////////////////////////////////////////////////
-	MinerData& operator=(const MinerData& minerData);
+	CLMemory& operator=(const CLMemory& memory);
 
 	///////////////////////////////////////////////////////////////////////////////
 	//Destructor
 	///////////////////////////////////////////////////////////////////////////////
-	~MinerData();
+	~CLMemory();
 
-	MinerData* Clone();
-	MinerData* DeepCopy();
+	CLMemory* Clone();
+	CLMemory* DeepCopy();
 
 	///////////////////////////////////////////////////////////////////////////////
 	//Accessors
 	///////////////////////////////////////////////////////////////////////////////
-	Core::CBlock*		GetBlock()		const		{ return this->m_pBLOCK;			}
-	GPUData*			GetGPUData()	const		{ return this->m_pGPUData;			}
+	const cl_mem& GetBuffer()			const	{	return this->m_clMemBuffer;		}
+	const cl_mem_flags& GetBufferType() const	{	return this->m_clmfType;		}
+	const size_t& GetBufferSize()		const	{	return this->m_stBufferSize;	}
+	const std::string& GetBufferName()	const	{	return this->m_szBufferName;	}
+	void* GetEmptyBuffer()				const	{	return this->m_pEmptyBuffer;	}
 
 	///////////////////////////////////////////////////////////////////////////////
 	//Mutators
 	///////////////////////////////////////////////////////////////////////////////
-	void	SetBlock(Core::CBlock* pBlock)			{   this->m_pBLOCK = pBlock;		}
-	void	SetGPUData(GPUData* pGPUData)			{	this->m_pGPUData = pGPUData;	}
-
+	void SetBuffer(const cl_mem& buffer)				{	this->m_clMemBuffer = buffer;			}
+	void SetBufferType(const cl_mem_flags& bufferType)	{	this->m_clmfType = bufferType;			}
+	void SetBufferSize(const size_t& bufferSize)		{	this->m_stBufferSize = bufferSize;		}
+	void SetBufferName(const std::string& bufferName)	{	this->m_szBufferName = bufferName;		}
+	void SetEmptyBuffer(void* pEmptyBuffer)				{	this->m_pEmptyBuffer = pEmptyBuffer;	}
 };
 
 
-#endif //_MINERDATA_H
+#endif //_CLMEMORY_H_

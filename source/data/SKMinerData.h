@@ -12,6 +12,7 @@
 #define _SKMINERDATA_H
 
 #include "MinerData.h"
+#include "../hash/uint1024.h"
 
 class CBigNum;
 

@@ -51,6 +51,7 @@ ADLGPU& ADLGPU::operator=(const ADLGPU& adlGPU)
 	if(this->m_pDefPerfLev != NULL)
 	{
 		free(this->m_pDefPerfLev);
+		this->m_pDefPerfLev = NULL;
 	}
 
 	int level = this->m_lpOdParameters.iNumberOfPerformanceLevels - 1;
@@ -72,9 +73,16 @@ ADLGPU& ADLGPU::operator=(const ADLGPU& adlGPU)
 ///////////////////////////////////////////////////////////////////////////////
 ADLGPU::~ADLGPU()
 {
+	if (this->m_pGPUSettings)
+	{
+		delete(this->m_pGPUSettings);
+		this->m_pGPUSettings = NULL;
+	}
+
 	if(this->m_pDefPerfLev != NULL)
 	{
 		free(this->m_pDefPerfLev);
+		this->m_pDefPerfLev = NULL;
 	}
 }
 
@@ -125,7 +133,7 @@ ADLGPU* ADLGPU::DeepCopy()
 
 	if (this->m_pTwin)
 	{
-		pADLGPU->SetTwin(new ADLGPU(*((ADLGPU*)this->m_pTwin)));
+		pADLGPU->SetTwin(this->m_pTwin);
 	}
 	
 	pADLGPU->SetADLTemperature(this->m_lpTemperature);

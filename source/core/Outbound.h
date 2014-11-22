@@ -37,6 +37,7 @@ namespace LLP
 		
 		Packet ReadNextPacket(int nTimeout = 30);
 		bool Connect();
+		void Disconnect();
 	};
 }
 

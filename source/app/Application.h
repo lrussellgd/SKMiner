@@ -50,7 +50,6 @@ private:
 	std::vector<ServerConnection*> m_vecServerConnections;
 
 	Application();
-	~Application();
 	Application(const Application& app);
 	void operator=(const Application& app);
 
@@ -64,6 +63,8 @@ protected:
 	static Application* m_app;
 
 public:
+
+	~Application();
 
 	///////////////////////////////////////////////////////////////////////////////
 	//Singleton Declaration

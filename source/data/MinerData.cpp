@@ -17,7 +17,6 @@ MinerData::MinerData()
 {
 	this->m_pBLOCK = NULL;
 	this->m_pGPUData = NULL;
-
 }
 
 MinerData::MinerData(const MinerData& minerData)
@@ -39,11 +38,13 @@ MinerData::~MinerData()
 	if (m_pBLOCK)
 	{
 		delete(m_pBLOCK);
+		m_pBLOCK = NULL;
 	}
 
 	if (m_pGPUData)
 	{
 		delete(m_pGPUData);
+		m_pGPUData = NULL;
 	}
 }
 

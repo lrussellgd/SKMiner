@@ -10,6 +10,8 @@
 
 #include "CLKernel.h"
 
+#include "CLMemory.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 //Constructor
 ///////////////////////////////////////////////////////////////////////////////
@@ -69,6 +71,18 @@ CLKernel& CLKernel::operator=(const CLKernel& cKernel)
 ///////////////////////////////////////////////////////////////////////////////
 CLKernel::~CLKernel()
 {
+	for (auto iter = this->m_mapMemBuffers.begin(); iter != this->m_mapMemBuffers.end(); ++iter)
+	{
+		CLMemory* memBuffer = iter->second;
+		if (memBuffer)
+		{
+			delete(memBuffer);
+			memBuffer = NULL;
+		}
+	}
+	this->m_mapMemBuffers.clear();
+
+	clReleaseKernel(this->m_clKernel());
 }
 
 CLKernel* CLKernel::Clone()

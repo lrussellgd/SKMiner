@@ -53,7 +53,9 @@ Application::Application()
 }
 Application::Application(const Application& app) { }
 void Application::operator=(const Application& app) { }
-Application::~Application() { }
+Application::~Application() 
+{ 
+}
 
 void Application::Initialize(std::map<std::string,std::string> arguments)
 {		
@@ -98,24 +100,28 @@ void Application::Shutdown()
 {
 	m_vecLog.clear();
 
-	if(m_pRunOptions)
-	{
-		delete(m_pRunOptions);
-	}
+	
 
 	//if(m_pUIData)
 	//{
 		//delete(m_pUIData);
+		//m_pUIData = NULL;
 	//}
 
 	if(m_pADL)
 	{
 		delete(m_pADL);
+		m_pADL = NULL;
 	}
 	
 	for(size_t index = 0; index < m_vecGPUData.size(); ++index)
 	{
-		delete(m_vecGPUData[index]);
+		GPUData* pGPUData = m_vecGPUData[index];
+		if (pGPUData)
+		{
+			delete(pGPUData);
+			pGPUData = NULL;
+		}
 	}
 	m_vecGPUData.clear();
 	
@@ -124,14 +130,20 @@ void Application::Shutdown()
 		ServerConnection* pServerConnection = m_vecServerConnections[srvIndex];
 		if (pServerConnection)
 		{
+			pServerConnection->SetIsShuttingDown(true);
+			
+			while (!pServerConnection->GetDidShutDown()){}
+
 			delete(pServerConnection);
+			pServerConnection = NULL;
 		}
 	}
 	m_vecServerConnections.clear();
 
-	if(m_app)
+	if (m_pRunOptions)
 	{
-		delete(m_app);
+		delete(m_pRunOptions);
+		m_pRunOptions = NULL;
 	}
 }
 
@@ -166,11 +178,13 @@ std::map<std::string,std::string> Application::ParseOptions(std::string fileName
 		return optionsMap;
 	}
 
+	json_t* jsonDta;
+
 	std::string szData = fileData.str();
 	if(szData.compare("") != 0)
 	{
 		std::string jsonStr(szData);
-		json_t* jsonDta = Parse_JSON(jsonStr);
+		jsonDta = Parse_JSON(jsonStr);
 
 		if(!jsonDta)
 		{
@@ -354,6 +368,14 @@ std::map<std::string,std::string> Application::ParseOptions(std::string fileName
 		{
 			optionsMap["--devices"] = json_string_value(devices);
 		}
+
+		
+	}
+
+	if (jsonDta)
+	{
+		delete(jsonDta);
+		jsonDta = NULL;
 	}
 
 	return optionsMap;

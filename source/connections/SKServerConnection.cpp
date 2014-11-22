@@ -15,24 +15,41 @@
 #include "../threads/SKMinerThread.h"
 #include "../data/SKMinerData.h"
 #include "../kernel/KernelFuncs.h"
+#include "../compute/CLFuncs.h"
 
-SKServerConnection::SKServerConnection()
+SKServerConnection::SKServerConnection() : ServerConnection()
 {
+
+}
+
+SKServerConnection::SKServerConnection(const SKServerConnection& skServerConnection) : ServerConnection(skServerConnection)
+{
+	std::vector<GPUData*> vecGPUs = skServerConnection.GetGPUs();
+	for (size_t index = 0; index < vecGPUs.size(); ++index)
+	{
+		this->m_vecGPUs.push_back(vecGPUs[index]);
+	}
 }
 
 SKServerConnection& SKServerConnection::operator=(const SKServerConnection& serverConnection)
 {
+	std::vector<GPUData*> vecGPUs = serverConnection.GetGPUs();
+	for (size_t index = 0; index < vecGPUs.size(); ++index)
+	{
+		this->m_vecGPUs.push_back(vecGPUs[index]);
+	}
+
 	return *this;
 }
 
 SKServerConnection::SKServerConnection(std::vector<GPUData*> gpus, std::string ip, std::string port, int nMaxTimeout)
 {
-	this->IP = ip;
-	this->PORT = port;
+	this->m_szIP = ip;
+	this->m_szPORT = port;
 
-	THREAD = boost::thread(&SKServerConnection::ServerThread, this);
+	m_thTHREAD = boost::thread(&SKServerConnection::ServerThread, this);
 
-	nThreads = 0;
+	m_nThreads = 0;
 	for (int nIndex = 0; nIndex < gpus.size(); ++nIndex)
 	{
 		if (!gpus[nIndex]->GetGPU()->GetGPUSetting()->GetIsEnabled())
@@ -40,27 +57,55 @@ SKServerConnection::SKServerConnection(std::vector<GPUData*> gpus, std::string i
 			continue;
 		}
 
+		MinerData* pMinerData = new SKMinerData();
+		pMinerData->SetGPUData(gpus[nIndex]);
+		pMinerData->SetBlock(NULL);
+		((SKMinerData*)pMinerData)->SetTarget(new CBigNum());
+
+		MinerThread* pThread = new SKMinerThread((SKMinerData*)pMinerData);
+		pThread->SetHashFunc(sk1024_kernel_djm2);
+		m_vecTHREADS.push_back(pThread);
+
 		int currThreads = gpus[nIndex]->GetGPU()->GetGPUSetting()->GetThreads();
-		for (int gpuThreads = 0; gpuThreads < currThreads; ++gpuThreads)
+		if (currThreads > 1)
 		{
-			MinerData* pMinerData = new SKMinerData();
-			pMinerData->SetGPUData(gpus[nIndex]->DeepCopy());
-			pMinerData->SetBlock(NULL);
-			((SKMinerData*)pMinerData)->SetTarget(new CBigNum());
+			for (int gpuThreads = 1; gpuThreads < currThreads; ++gpuThreads)
+			{
+				MinerData* pMinerData = new SKMinerData();
 
-			MinerThread* pThread = new SKMinerThread((SKMinerData*)pMinerData);
-			pThread->SetHashFunc(sk1024_kernel_djm2);
-			THREADS.push_back(pThread);
+				GPUData* pGPUData = CreateNewOpenCLDevice(gpus[nIndex]);
+				pMinerData->SetGPUData(pGPUData);
+				pMinerData->SetBlock(NULL);
+				((SKMinerData*)pMinerData)->SetTarget(new CBigNum());
 
-			nThreads++;
+				MinerThread* pThread = new SKMinerThread((SKMinerData*)pMinerData);
+				pThread->SetHashFunc(sk1024_kernel_djm2);
+				m_vecTHREADS.push_back(pThread);
+			}
 		}
 	}
-	nTimeout = nMaxTimeout;
+
+	m_vecGPUs = gpus;
+	m_nTimeout = nMaxTimeout;
+
+	m_nThreads = m_vecTHREADS.size();
 }
 
 SKServerConnection::~SKServerConnection()
 {
 	ServerConnection::~ServerConnection();
+
+	for (size_t gpuIndex = 0; gpuIndex < m_vecGPUs.size(); ++gpuIndex)
+	{
+		GPUData* pGPUData = m_vecGPUs[gpuIndex];
+		if (pGPUData)
+		{
+			delete(pGPUData);
+			pGPUData = NULL;
+		}
+	}
+
+	m_vecGPUs.clear();
 }
 
 //Main Connection Thread. Handles all the networking to allow
@@ -68,40 +113,45 @@ SKServerConnection::~SKServerConnection()
 void SKServerConnection::ServerThread()
 {
 	/** Don't begin until all mining threads are Created. **/
-	while (THREADS.size() != nThreads)
+	while ((m_vecTHREADS.size() != m_nThreads) && !m_bIsShutDown)
 		Sleep(1000);
 
 	/** Initialize the Server Connection. **/
-	CLIENT = new LLP::Miner(IP, PORT);
+	m_pCLIENT = new LLP::Miner(m_szIP, m_szPORT);
 
 	/** Initialize a Timer for the Hash Meter. **/
-	TIMER.Start();
+	m_tTIMER.Start();
 
 	unsigned int nBestHeight = 0;
 	loop
 	{
+		if (m_bIsShutDown)
+		{
+			break;
+		}
+
 		try
 		{
 			/** Run this thread at 1 Cycle per Second. **/
 			Sleep(1000);
 
 			/** Attempt with best efforts to keep the Connection Alive. **/
-			if (!CLIENT->Connected() || CLIENT->Errors())
+			if (!m_pCLIENT->Connected() || m_pCLIENT->Errors())
 			{
-				if (!CLIENT->Connect())
+				if (!m_pCLIENT->Connect())
 					continue;
 
 				/** Send to the server the Channel we will be Mining For. **/
 				else
-					CLIENT->SetChannel(2);
+					m_pCLIENT->SetChannel(2);
 			}
 
 			/** Check the Block Height. **/
-			unsigned int nHeight = CLIENT->GetHeight(5);
+			unsigned int nHeight = m_pCLIENT->GetHeight(5);
 			if (nHeight == 0)
 			{
 				printf("Failed to Update Height...\n");
-				CLIENT->Disconnect();
+				m_pCLIENT->Disconnect();
 				continue;
 			}
 
@@ -116,63 +166,69 @@ void SKServerConnection::ServerThread()
 
 
 			/** Rudimentary Meter **/
-			if (TIMER.Elapsed() > 10)
+			if (m_tTIMER.Elapsed() > 10)
 			{
-				unsigned int nElapsed = TIMER.ElapsedMilliseconds();
+				unsigned int nElapsed = m_tTIMER.ElapsedMilliseconds();
 				unsigned int nHashes = Hashes();
 
 				double KHASH = (double)nHashes / nElapsed;
 				printf("[METERS] %u Hashes | %f KHash/s | Height = %u\n", nHashes, KHASH, nBestHeight);
 
-				TIMER.Reset();
+				m_tTIMER.Reset();
 			}
 
 
 			/** Check if there is work to do for each Miner Thread. **/
-			for (int nIndex = 0; nIndex < THREADS.size(); nIndex++)
+			for (int nIndex = 0; nIndex < m_vecTHREADS.size(); nIndex++)
 			{
-				if (!THREADS[nIndex]->GetMinerData()->GetGPUData()->GetGPU()->GetGPUSetting()->GetIsEnabled())
+				if (m_bIsShutDown)
 				{
-					continue;
+					break;
 				}
 
+				if (!m_vecTHREADS[nIndex]->GetMinerData()->GetGPUData()->GetGPU()->GetGPUSetting()->GetIsEnabled())
+				{
+					continue;
+				}				
+
 				/** Attempt to get a new block from the Server if Thread needs One. **/
-				if (THREADS[nIndex]->GetIsNewBlock())
+				if (m_vecTHREADS[nIndex]->GetIsNewBlock())
 				{
 					/** Delete the Block Pointer if it Exists. **/
-					Core::CBlock* pBlock = THREADS[nIndex]->GetMinerData()->GetBlock();
+					 Core::CBlock* pBlock = m_vecTHREADS[nIndex]->GetMinerData()->GetBlock();
 					if (pBlock != NULL)
 					{
 						delete(pBlock);
+						pBlock = NULL;
 					}
 
 					/** Retrieve new block from Server. **/
-					pBlock = CLIENT->GetBlock(5);
+					pBlock = m_pCLIENT->GetBlock(5);
 
 					/** If the block is good, tell the Mining Thread its okay to Mine. **/
 					if (pBlock)
 					{
-						THREADS[nIndex]->SetIsBlockFound(false);
-						THREADS[nIndex]->SetIsNewBlock(false);
-						THREADS[nIndex]->GetMinerData()->SetBlock(pBlock);
+						m_vecTHREADS[nIndex]->SetIsNewBlock(false);
+						m_vecTHREADS[nIndex]->SetIsBlockFound(false);
+						m_vecTHREADS[nIndex]->GetMinerData()->SetBlock(pBlock);
 					}
 					/** If the Block didn't come in properly, Reconnect to the Server. **/
 					else
 					{
-						CLIENT->Disconnect();
+						m_pCLIENT->Disconnect();
 					}
 
 				}
 				/** Submit a block from Mining Thread if Flagged. **/
-				else if (THREADS[nIndex]->GetIsBlockFound())
+				else if (m_vecTHREADS[nIndex]->GetIsBlockFound())
 				{
 					/** Attempt to Submit the Block to Network. **/
-					unsigned char RESPONSE = CLIENT->SubmitBlock(THREADS[nIndex]->GetMinerData()->GetBlock()->GetMerkleRoot(), THREADS[nIndex]->GetMinerData()->GetBlock()->GetNonce(), 30);
+
+					unsigned char RESPONSE = m_pCLIENT->SubmitBlock(m_vecTHREADS[nIndex]->GetMinerData()->GetBlock()->GetMerkleRoot(), m_vecTHREADS[nIndex]->GetMinerData()->GetBlock()->GetNonce(), 30);
 					printf("[MASTER] Hash Found on Miner Thread %i\n", nIndex);
 
-					unsigned long long truc = THREADS[nIndex]->GetMinerData()->GetBlock()->GetNonce();
+					unsigned long long truc = m_vecTHREADS[nIndex]->GetMinerData()->GetBlock()->GetNonce();
 					printf("[MASTER] nonce %08x %08x\n", (uint32_t)(truc >> 32)), (uint32_t)(truc & 0xFFFFFFFFULL);
-
 
 					/** Check the Response from the Server.**/
 					if (RESPONSE == 200)
@@ -183,15 +239,14 @@ void SKServerConnection::ServerThread()
 					{
 						printf("[MASTER] Block Rejected by Coinshield Network.\n");
 
-						THREADS[nIndex]->SetIsNewBlock(true);
-						THREADS[nIndex]->SetIsBlockFound(false);
+						m_vecTHREADS[nIndex]->SetIsNewBlock(true);
+						m_vecTHREADS[nIndex]->SetIsBlockFound(false);
 					}
-
 					/** If the Response was Incomplete, Reconnect to Server and try to Submit Block Again. **/
 					else
 					{
 						printf("[MASTER] Failure to Submit Block. Reconnecting...\n");
-						CLIENT->Disconnect();
+						m_pCLIENT->Disconnect();
 					}
 
 					break;                           
@@ -202,5 +257,17 @@ void SKServerConnection::ServerThread()
 		{ 
 			std::cout << e.what() << std::endl;
 		}
+	}
+
+	if (m_bIsShutDown)
+	{
+		for (size_t index = 0; index < m_vecTHREADS.size(); ++index)
+		{
+			m_vecTHREADS[index]->SetIsShuttingDown(true);
+
+			while (!m_vecTHREADS[index]->GetDidShutDown()){}
+		}
+
+		m_bDidShutDown = true;
 	}
 }

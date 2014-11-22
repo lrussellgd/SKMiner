@@ -17,6 +17,9 @@ class SKMinerData;
 
 class SKMinerThread : public MinerThread
 {
+private:
+
+	void Initialize();
 
 public:
 
@@ -24,10 +27,9 @@ public:
 	SKMinerThread(SKMinerData* pData);
 	SKMinerThread(const SKMinerThread& miner);
 	SKMinerThread& operator=(const SKMinerThread& miner);
-	~SKMinerThread();
+	~SKMinerThread();	
 
 	void Miner();
-
 };
 
 #endif //_SKMINERTHREAD_H_

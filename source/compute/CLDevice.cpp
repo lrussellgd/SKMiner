@@ -121,11 +121,17 @@ CLDevice::~CLDevice()
 {
 	for (auto iter = this->m_mapKernels.begin(); iter != this->m_mapKernels.end(); ++iter)
 	{
-		if (iter->second)
+		CLKernel* pKernel = iter->second;
+
+		if (pKernel)
 		{
-			delete(iter->second);
+			delete(pKernel);
+			pKernel = NULL;
 		}
 	}
+
+	clReleaseCommandQueue(this->m_commandQueue());
+	clReleaseDevice(this->m_clDevice());
 
 }
 

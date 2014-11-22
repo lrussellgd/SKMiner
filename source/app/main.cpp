@@ -7,12 +7,18 @@
 //
 // License:	GNU GENERAL PUBLIC LICENSE V3
 //////////////////////////////////////////////
-
+//#include <vld.h>
 
 #include "Application.h"
 
+void Exit();
+
+Application* myApp;
+
 int main(int argc, char *argv[])
 {
+	atexit(Exit);
+
 	std::map<std::string, std::string> mapArgs;
 	if (argc >= 2)
 	{
@@ -59,11 +65,24 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	Application* myApp = Application::GetInstance();
+	myApp = Application::GetInstance();
 	myApp->Initialize(mapArgs);
 
 	std::string key;
 	std::cin >> key;
 
 	myApp->Shutdown();
+
+	delete(myApp);
+	myApp = NULL;
+}
+
+void Exit()
+{
+	if (myApp)
+	{
+		myApp->Shutdown();
+		delete(myApp);
+		myApp = NULL;
+	}
 }

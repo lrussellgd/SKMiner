@@ -28,10 +28,12 @@ class MinerThread
 
 		MinerData* m_pMinerData;
 		bool m_bBlockFound, m_bNewBlock, m_bReady;
-		LLP::Thread_t m_pTHREAD;
+		LLP::Thread_t* m_pTHREAD;
 		unsigned int m_unHashes;
 		double total_mhashes_done;
-		boost::mutex m_clLock;
+		boost::mutex* m_clLock;
+		bool m_bShutown;
+		bool m_bDidShutDown;
 
 		HashFuncPtrType m_hashFunPtr;
 
@@ -46,10 +48,15 @@ class MinerThread
 		
 		//Main Miner Thread. Bound to the class with boost. Might take some rearranging to get working with OpenCL.
 		void Miner() { }
+
+		void Lock()		{ if (m_clLock) { m_clLock->lock(); } }
+		void Unlock()	{ if (m_clLock)	{ m_clLock->unlock(); } }
 			
 		///////////////////////////////////////////////////////////////////////////////
 		//Accessors
 		///////////////////////////////////////////////////////////////////////////////
+		const bool				GetIsShuttingDown() const	{	return this->m_bShutown;			}	
+		const bool				GetDidShutDown()	const	{	return this->m_bDidShutDown;		}
 		const bool				GetIsBlockFound()	const	{	return this->m_bBlockFound;			}
 		const bool				GetIsNewBlock()		const	{	return this->m_bNewBlock;			}
 		const bool				GetIsReady()		const	{	return this->m_bReady;				}
@@ -59,6 +66,7 @@ class MinerThread
 		///////////////////////////////////////////////////////////////////////////////
 		//Mutators
 		///////////////////////////////////////////////////////////////////////////////
+		void    SetIsShuttingDown(bool bIsShuttingDown)		{	this->m_bShutown = bIsShuttingDown; }
 		void	SetIsBlockFound(bool bFoundBlock)			{	this->m_bBlockFound = bFoundBlock;	}
 		void	SetIsNewBlock(bool bNewBlock)				{	this->m_bNewBlock = bNewBlock;		}
 		void	SetIsReady(bool bReady)						{	this->m_bReady = bReady;			}

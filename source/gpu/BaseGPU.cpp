@@ -63,17 +63,6 @@ BaseGPU& BaseGPU::operator=(const BaseGPU& baseGPU)
 	return *this;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//Destructor
-///////////////////////////////////////////////////////////////////////////////
-BaseGPU::~BaseGPU()
-{
-	if (this->m_pGPUSettings)
-	{
-		delete(this->m_pGPUSettings);
-	}
-}
-
 BaseGPU* BaseGPU::Clone()
 {
 	BaseGPU* pGPU = new BaseGPU();
