@@ -38,6 +38,12 @@ To see a full list of the optional config parameters view the file:
  /documents/config_parameters.txt
 
 
+Also, there is an available Web GUI. It resides in /resourse/ui .
+
+Simply open the SKMinerGUI.html file while the miner is running. 
+
+The Web GUI refreshes every 5 seconds so it might take 5 to 10 seconds before you start seeing any information.
+ 
 
 BUILDING
 ---------
