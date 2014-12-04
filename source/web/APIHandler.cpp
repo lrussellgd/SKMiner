@@ -16,6 +16,7 @@
 #include"../config/GPUSetting.h"
 #include "../compute/BaseComputeDevice.h"
 #include "../driver/ADL.h"
+#include "../compute/CLDevice.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //Constructor
@@ -117,15 +118,33 @@ void APIHandler::GetMiningInfo(json_spirit::Object& pObject)
 			pGPUData.push_back(json_spirit::Pair("xintentsity", pMinerData->GetGPUData()->GetGPU()->GetGPUSetting()->GetXIntensity()));
 			pGPUData.push_back(json_spirit::Pair("rawintentsity", pMinerData->GetGPUData()->GetGPU()->GetGPUSetting()->GetRawIntensity()));
 			pGPUData.push_back(json_spirit::Pair("algorithm", ((BaseComputeDevice*)pMinerData->GetGPUData()->GetDevice())->GetAlgorithm()));
-			pGPUData.push_back(json_spirit::Pair("temperature", m_pApp->GetADL()->GetGPUTemp(pMinerData->GetGPUData())));
 
-			if (pMinerData->GetGPUData()->GetGPU()->GetGPUSetting()->GetHasFanSpeed())
+			ADLGPU* pADLGPU = dynamic_cast<ADLGPU*>(pMinerData->GetGPUData()->GetGPU());
+			if (pADLGPU != NULL)
 			{
-				pGPUData.push_back(json_spirit::Pair("fan", m_pApp->GetADL()->GetFanSpeed(pMinerData->GetGPUData())));
+				pGPUData.push_back(json_spirit::Pair("adapterName", pADLGPU->GetAdapterName()));
+				pGPUData.push_back(json_spirit::Pair("biosPartNumber", pADLGPU->GetADLBiosInfo().strPartNumber));
+				pGPUData.push_back(json_spirit::Pair("biosVersion", pADLGPU->GetADLBiosInfo().strVersion));
+				pGPUData.push_back(json_spirit::Pair("biosDate", pADLGPU->GetADLBiosInfo().strDate));
+
+				pGPUData.push_back(json_spirit::Pair("temperature", m_pApp->GetADL()->GetGPUTemp(pMinerData->GetGPUData())));
+
+				if (pMinerData->GetGPUData()->GetGPU()->GetGPUSetting()->GetHasFanSpeed())
+				{
+					pGPUData.push_back(json_spirit::Pair("fan", m_pApp->GetADL()->GetFanSpeed(pMinerData->GetGPUData())));
+				}
+				else
+				{
+					pGPUData.push_back(json_spirit::Pair("fan", m_pApp->GetADL()->GetFanPercent((ADLGPU*)pMinerData->GetGPUData()->GetGPU())));
+				}
 			}
-			else
+
+			CLDevice* clDevice = dynamic_cast<CLDevice*>(pMinerData->GetGPUData()->GetDevice());
+			if (clDevice != NULL)
 			{
-				pGPUData.push_back(json_spirit::Pair("fan", m_pApp->GetADL()->GetFanPercent((ADLGPU*)pMinerData->GetGPUData()->GetGPU())));
+				pGPUData.push_back(json_spirit::Pair("name", clDevice->GetName()));
+				pGPUData.push_back(json_spirit::Pair("addressBits", (int)clDevice->GetAddressBits()));
+				pGPUData.push_back(json_spirit::Pair("openCLVersion", clDevice->GetOpenCLVersion()));
 			}
 
 			pThreadData.push_back(json_spirit::Pair("gpu", pGPUData));

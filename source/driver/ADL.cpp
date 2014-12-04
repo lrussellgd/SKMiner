@@ -266,7 +266,7 @@ ADL::ADL(std::vector<GPUData*> gpus)
 		return;
 	}
 
-	ADLBiosInfo BiosInfo;
+	
 	adapterId = -1;
     for (int i = 0; i < m_nNumDevices; ++i)
     {
@@ -289,7 +289,7 @@ ADL::ADL(std::vector<GPUData*> gpus)
 			continue;
 		}
 
-		gpus[i]->SetName(m_lpInfo[i].strAdapterName);
+		//gpus[i]->SetName(m_lpInfo[i].strAdapterName);
 		m_bIsActive = true;
 
 		ADLGPU* adlGPU = (ADLGPU*)gpus[i]->GetGPU();
@@ -303,11 +303,12 @@ ADL::ADL(std::vector<GPUData*> gpus)
 		adlGPU->SetLPAdapterID(lpAdapterID);
 		adlGPU->SetAdapterName(m_lpInfo[i].strAdapterName);
 		adlGPU->SetIsDefFanValid(false);
-		
+
+		ADLBiosInfo BiosInfo;
 		adlResult = ADL_Adapter_VideoBiosInfo_Get(iAdapterIndex, &BiosInfo);
 		if (adlResult != ADL_ERR)
 		{
-			std::cout << "ADL index " << iAdapterIndex << ", id " << lpAdapterID << " - BIOS partno.: " << BiosInfo.strPartNumber << ", version: " << BiosInfo.strVersion << ", date: " << BiosInfo.strDate << std::endl;
+			adlGPU->SetADLBiosInfo(BiosInfo);
 		}
 		
 		ADLODParameters adlParams = adlGPU->GetADLODParameters();

@@ -43,7 +43,6 @@ private:
 
 	size_t m_unWorkSize;
 
-	std::string m_szName;
 	std::string m_szDevicePath;
 
 	BaseGPU* m_pGPU;
@@ -96,7 +95,6 @@ public:
 	const	float			GetGPUVDDC()				const			{	return this->m_fGPUVDDC;				}
 	const	float			GetGPUTemp()				const			{	return this->m_fGPUTemp;				}
 	const	size_t&			GetWorkSize()				const			{	return this->m_unWorkSize;				}
-	const	std::string&	GetName()					const			{	return this->m_szName;					}
 	const	std::string&	GetDevicePath()				const			{	return this->m_szDevicePath;			}
 	BaseGPU*				GetGPU()					const			{	return this->m_pGPU;					}
 	BaseComputeDevice*		GetDevice()					const			{	return this->m_pDevice;					}
@@ -122,7 +120,6 @@ public:
 	void					SetWorksize(const size_t& unWorkSize)					{	this->m_unWorkSize = unWorkSize;		}
 	void					SetGPUTemp(const float fGPUTemp)						{	this->m_fGPUTemp = fGPUTemp;			}
 	void					SetGPUVDDC(const float fGPUVDDC)						{	this->m_fGPUVDDC = fGPUVDDC;			}
-	void					SetName(const std::string& szName)						{	this->m_szName = szName;				}
 	void					SetDevicePath(const std::string& szDevPath)				{	this->m_szDevicePath = szDevPath;		}
 	void					SetGPU(BaseGPU* pGPU)									{	this->m_pGPU = pGPU;					}
 	void					SetDevice(BaseComputeDevice* pDevice)					{	this->m_pDevice = pDevice;				}

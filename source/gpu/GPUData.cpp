@@ -62,7 +62,6 @@ GPUData::GPUData(const GPUData& gpuData)
 	this->m_unMaxHashes = gpuData.GetMaxHashes();
 	this->m_fGPUVDDC = gpuData.GetGPUVDDC();
 	this->m_fGPUTemp = gpuData.GetGPUTemp();
-	this->m_szName = gpuData.GetName();
 	this->m_szDevicePath = gpuData.GetDevicePath();	
 	this->m_pGPU =  gpuData.GetGPU();
 	this->m_pDevice = gpuData.GetDevice();
@@ -89,7 +88,6 @@ GPUData& GPUData::operator=(const GPUData& gpuData)
 	this->m_unMaxHashes = gpuData.GetMaxHashes();
 	this->m_fGPUVDDC = gpuData.GetGPUVDDC();
 	this->m_fGPUTemp = gpuData.GetGPUTemp();
-	this->m_szName = gpuData.GetName();
 	this->m_szDevicePath = gpuData.GetDevicePath();	
 	this->m_pGPU = gpuData.GetGPU();
 	this->m_pDevice = gpuData.GetDevice();
@@ -140,7 +138,6 @@ GPUData* GPUData::Clone()
 	pGPUData->SetGPUVDDC(this->m_fGPUVDDC);
 	pGPUData->SetGPUTemp(this->m_fGPUTemp);
 	pGPUData->SetWorksize(this->m_unWorkSize);
-	pGPUData->SetName(this->m_szName);
 	pGPUData->SetDevicePath(this->m_szDevicePath);
 	pGPUData->SetGPU(this->m_pGPU);
 	pGPUData->SetDevice(this->m_pDevice);
@@ -172,7 +169,6 @@ GPUData* GPUData::DeepCopy()
 	pGPUData->SetGPUVDDC(this->m_fGPUVDDC);
 	pGPUData->SetGPUTemp(this->m_fGPUTemp);
 	pGPUData->SetWorksize(this->m_unWorkSize);
-	pGPUData->SetName(this->m_szName);
 	pGPUData->SetDevicePath(this->m_szDevicePath);
 	pGPUData->SetGPU(this->m_pGPU->DeepCopy());
 	pGPUData->SetDevice(this->m_pDevice->DeepCopy());

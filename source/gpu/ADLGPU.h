@@ -15,6 +15,7 @@
 #include "../ADL_SDK/adl_sdk.h"
 #include "BaseGPU.h"
 
+#include <string>
 
 class ADLGPU : public BaseGPU
 {
@@ -27,8 +28,10 @@ private:
 	ADLFanSpeedInfo			m_lpFanSpeedInfo;
 	ADLFanSpeedValue		m_lpFanSpeedValue;
 	ADLFanSpeedValue		m_lpDefFanSpeedValue;
+	ADLBiosInfo				m_lpBiosInfo;
 
 	int						m_nLPAdapterID;
+	std::string				m_szAdapterName;
 	
 public:
 
@@ -65,7 +68,9 @@ public:
 	const ADLFanSpeedInfo&			GetADLFanSpeedInfo()		const										{	return this->m_lpFanSpeedInfo;						}
 	const ADLFanSpeedValue&			GetADLFanSpeedValue()		const										{	return this->m_lpFanSpeedValue;						}
 	const ADLFanSpeedValue&			GetADLDefFanSpeedValue()	const										{	return this->m_lpDefFanSpeedValue;					}
+	const ADLBiosInfo&				GetADLBiosInfo()			const										{	return this->m_lpBiosInfo;							}
 	const int						GetLPAdapterID()			const										{	return this->m_nLPAdapterID;						}
+	const std::string&				GetAdapterName()			const										{	return this->m_szAdapterName;						}
 
 	///////////////////////////////////////////////////////////////////////////////
 	//Mutators
@@ -77,7 +82,9 @@ public:
 	void							SetADLFanSpeedInfo(const ADLFanSpeedInfo& lpFanSpeedInfo)				{	this->m_lpFanSpeedInfo = lpFanSpeedInfo;			}	
 	void							SetADLFanSpeedValue(const ADLFanSpeedValue& lpFanSpeedValue)			{	this->m_lpFanSpeedValue = lpFanSpeedValue;			}
 	void							SetADLDefFanSpeedValue(const ADLFanSpeedValue& lpDefFanSpeedValue)		{	this->m_lpDefFanSpeedValue = lpDefFanSpeedValue;	}
+	void							SetADLBiosInfo(const ADLBiosInfo& lpBiosInfo)							{	this->m_lpBiosInfo = lpBiosInfo;					}
 	void							SetLPAdapterID(const int nLPAdapterID)									{	this->m_nLPAdapterID = nLPAdapterID;				}
+	void							SetAdapterName(const std::string& szAdapterName)						{	this->m_szAdapterName = szAdapterName;				}
 };
 
 

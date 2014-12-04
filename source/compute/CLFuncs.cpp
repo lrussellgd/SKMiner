@@ -445,7 +445,6 @@ GPUData* CreateNewOpenCLDevice(GPUData* pMainGPUThread)
 	pNewGPU->SetWorksize(pMainGPUThread->GetGPUVDDC());
 	pNewGPU->SetGPUTemp(pMainGPUThread->GetGPUTemp());
 	pNewGPU->SetGPUVDDC(pMainGPUThread->GetWorkSize());
-	pNewGPU->SetName(pMainGPUThread->GetName());
 	pNewGPU->SetDevicePath(pMainGPUThread->GetDevicePath());
 	pNewGPU->SetGPU(pMainGPUThread->GetGPU()->DeepCopy());
 

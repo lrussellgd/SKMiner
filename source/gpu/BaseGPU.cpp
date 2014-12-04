@@ -38,7 +38,6 @@ BaseGPU::BaseGPU(const BaseGPU& baseGPU)
 	this->m_nLastEngine = baseGPU.GetLastEngine();
 	this->m_nLastTemp = baseGPU.GetLastTemp();
 	this->m_nGPUID = baseGPU.GetGPUID();
-	this->m_szAdapterName = baseGPU.GetAdapterName();
 	this->m_pGPUSettings = baseGPU.GetGPUSetting();
 	this->m_pTwin = baseGPU.GetTwin();
 }
@@ -56,7 +55,6 @@ BaseGPU& BaseGPU::operator=(const BaseGPU& baseGPU)
 	this->m_nLastEngine = baseGPU.GetLastEngine();
 	this->m_nLastTemp = baseGPU.GetLastTemp();
 	this->m_nGPUID = baseGPU.GetGPUID();
-	this->m_szAdapterName = baseGPU.GetAdapterName();
 	this->m_pGPUSettings = baseGPU.GetGPUSetting();
 	this->m_pTwin = baseGPU.GetTwin();
 
@@ -68,7 +66,6 @@ BaseGPU* BaseGPU::Clone()
 	BaseGPU* pGPU = new BaseGPU();
 	
 	pGPU->SetAdapterIndex(this->m_nAdapterIndex);
-	pGPU->SetAdapterName(this->m_szAdapterName);
 	pGPU->SetBusNumber(this->m_nBusNumber);
 	pGPU->SetGPUID(this->m_nGPUID);
 	pGPU->SetGPUSetting(this->m_pGPUSettings);
@@ -87,7 +84,6 @@ BaseGPU* BaseGPU::DeepCopy()
 	BaseGPU* pGPU = new BaseGPU();
 
 	pGPU->SetAdapterIndex(this->m_nAdapterIndex);
-	pGPU->SetAdapterName(this->m_szAdapterName);
 	pGPU->SetBusNumber(this->m_nBusNumber);
 	pGPU->SetGPUID(this->m_nGPUID);
 	pGPU->SetGPUSetting(this->m_pGPUSettings->DeepCopy());

@@ -13,6 +13,12 @@
 		
 		<script type="text/javascript">
 
+		
+			function hideGPUData()
+			{
+				$( "#gpuData" ).fadeOut(800);
+			}
+		
 			setInterval(function() {	
 
 				$.ajax({
@@ -42,7 +48,7 @@
 								conn.totalAccepted += val.threads[index2].accepted;
 								conn.totalRejected += val.threads[index2].rejected;
 							
-								var gpu = $.parseJSON('{ "id" : ' + val.threads[index2].gpu.id + ', "hashRate" : ' + val.threads[index2].hashRate.toPrecision(7) + ',  "accepted" : ' + val.threads[index2].accepted + ', "rejected" : ' + val.threads[index2].rejected + ', "temperature" : ' + val.threads[index2].gpu.temperature + ', "fan" : ' + val.threads[index2].gpu.fan + ', "intensity" : ' + val.threads[index2].gpu.intentsity + ', "xintentsity" : ' + val.threads[index2].gpu.xintentsity + ', "rawintentsity" : ' + val.threads[index2].gpu.rawintentsity + '}');
+								var gpu = $.parseJSON('{ "id" : ' + val.threads[index2].gpu.id + ', "hashRate" : ' + val.threads[index2].hashRate.toPrecision(7) + ',  "accepted" : ' + val.threads[index2].accepted + ', "rejected" : ' + val.threads[index2].rejected + ', "temperature" : ' + val.threads[index2].gpu.temperature + ', "fan" : ' + val.threads[index2].gpu.fan + ', "intensity" : ' + val.threads[index2].gpu.intentsity + ', "xintentsity" : ' + val.threads[index2].gpu.xintentsity + ', "rawintentsity" : ' + val.threads[index2].gpu.rawintentsity + ', "name" : "' + val.threads[index2].gpu.name + '", "addressBits" : ' + val.threads[index2].gpu.addressBits + ', "openCLVersion" : "' + val.threads[index2].gpu.openCLVersion + '", "adapterName" : "' + val.threads[index2].gpu.adapterName + '", "biosPartNumber" : "' + val.threads[index2].gpu.biosPartNumber + '", "biosVersion" : "' + val.threads[index2].gpu.biosVersion + '", "biosDate" : "' + val.threads[index2].gpu.biosDate + '" }');
 								
 								var gpuExists = false;
 								for(var gpuIndex = 0; gpuIndex < gpuArr.length; ++gpuIndex)
@@ -94,17 +100,25 @@
 							
 							jQuery("#miningList" + connection.id).jqGrid({
 								datatype: "local",
-								colNames:['ID', 'Hash Rate KH/s', 'Accepted', 'Rejected', 'Temperature C', 'Fan', 'Intensity', 'X Intensity', 'Raw Intensity'],
+								colNames:['ID', 'Bits', 'Hash Rate KH/s', 'Accepted', 'Rejected', 'Temperature C', 'Fan', 'Intensity', 'X Intensity', 'Raw Intensity', 'Name', 'Adapter Name', 'Bios Part Number', 'Bios Version', 'Bios Date', 'OpenCL Version'],
 								colModel:[ 	
-										{name: 'id', index: 'id', width:60, align: "right", sorttype:"int"},
-										{name: 'hashRate', index: 'hashRate', width:151, align: "right", sorttype:"float"},
+										{name: 'id', index: 'id', width:30, align: "right", sorttype:"int"},
+										{name: 'addressBits', index: 'addressBits', width: 60, align: "right", sorttype:"int"},									
+										{name: 'hashRate', index: 'hashRate', width:120, align: "right", sorttype:"float"},
 										{name: 'accepted', index: 'accepted', width:60, align: "right", sorttype:"int"},
 										{name: 'rejected', index: 'rejected', width:60, align: "right", sorttype:"int"},
-										{name: 'temperature', index: 'temperature', width:90, align: "right", sorttype:"int"},
+										{name: 'temperature', index: 'temperature', width:100, align: "right", sorttype:"int"},
 										{name: 'fan', index: 'fan', width:60, align: "right", sorttype:"int"},
 										{name: 'intensity', index: 'intensity', width:90, align: "right", sorttype:"int"},
 										{name: 'xintentsity', index: 'xintentsity', width:90, align: "right", sorttype:"int"},
-										{name: 'rawintentsity', index: 'rawintentsity', width:100, align: "right", sorttype:"int"},
+										{name: 'rawintentsity', index: 'rawintentsity', width:90, align: "right", sorttype:"int"},								
+										{name: 'name', index: 'name', hidden: true},
+										{name: 'adapterName', index: 'adapterName', hidden: true},
+										{name: 'biosPartNumber', index: 'biosPartNumber', hidden: true},
+										{name: 'biosVersion', index: 'biosVersion', hidden: true},
+										{name: 'biosDate', index: 'biosDate', hidden: true},
+										{name: 'openCLVersion', index: 'openCLVersion', hidden: true}
+										
 								],
 								rowNum:6,
 								rowList:[10,20,30],
@@ -112,7 +126,48 @@
 								sortname: 'id',
 								viewrecords: true,
 								sortorder: "desc",
-								caption:"GPUs for Connection " + connection.id
+								caption:"GPUs for Connection " + connection.id,
+								onSelectRow: function(ids) {
+									
+									var rowData = jQuery("#miningList" + connection.id).jqGrid('getRowData',ids);
+								
+									if(rowData != null) 
+									{
+										$( "#gpuData" ).hide();
+									
+										var gpuHtml = '';
+										gpuHtml += '<div class="toggler">';
+										gpuHtml += '<div id="effect" class="ui-widget-content ui-corner-all">';
+										gpuHtml += '<h3 class="ui-widget-header ui-corner-all">GPU ' + rowData['id'] + '</h3>';
+										gpuHtml += '<div>';
+										gpuHtml += '<div><span style="font-weight:bold;">Name:</span> ' + rowData['name'] + '</div>';	
+										gpuHtml += '<br />';
+										gpuHtml += '<div><span style="font-weight:bold;">Adapter Name:</span> ' + rowData['adapterName'] + '</div>';	
+										gpuHtml += '<br />';
+										gpuHtml += '<div><span style="font-weight:bold;">Adress Bits:</span> ' + rowData['addressBits'] + '</div>';		
+										gpuHtml += '<br />';
+										gpuHtml += '<div><span style="font-weight:bold;">OpenCL Version:</span> ' + rowData['openCLVersion'] + '</div>';
+										gpuHtml += '<br />';
+										gpuHtml += '<div><span style="font-weight:bold;">Bios Part Number:</span> ' + rowData['biosPartNumber'] + '</div>';
+										gpuHtml += '<br />';
+										gpuHtml += '<div><span style="font-weight:bold;">Bios Version:</span> ' + rowData['biosVersion'] + '</div>';
+										gpuHtml += '<br />';
+										gpuHtml += '<div><span style="font-weight:bold;">Bios Date:</span> ' + rowData['biosDate'] + '</div>';
+										gpuHtml += '<br />';
+										gpuHtml += '<button onClick="hideGPUData()">Close</button>';
+										gpuHtml += '<br />';
+										gpuHtml += '</div>';
+										gpuHtml += '</div>';
+										gpuHtml += '</div>';
+										
+										$( "#gpuData" ).html('');
+										$( "#gpuData" ).html(gpuHtml).show("Fold");
+									}
+									else
+									{
+										$( "#gpuData" ).fadeOut(800);
+									}
+								}
 							});
 							
 							jQuery("#connectionList" + connection.id).jqGrid('addRowData',i+1,connection);
@@ -158,10 +213,10 @@
 				<p>Source Code Can be Obtained From My Github <a href="https://github.com/BitSlapper/SKMiner">here</a>!
 			</div>
 		</div>
-		
-		
 		<br />
-		<div id="miningData">.</div>
+		<div id="gpuData" style="width:810px"></div>
+		<br />
+		<div id="miningData"></div>
 		
 	</body>
 </html>
