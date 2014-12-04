@@ -177,8 +177,7 @@ bool sk1024_kernel_djm2(MinerData* pMinerData)
 	SkeinProcess.setArg(3, NonceBuffer);
 	SkeinProcess.setArg(4, TheTarget);
 
-
-	cl_command_queue TheQueue = clDevice->GetCommandQueue()();
+ 	cl_command_queue TheQueue = clDevice->GetCommandQueue()();
 
 	clEnqueueWriteBuffer(TheQueue, DataMsg, CL_TRUE, 0, pDataMsgMemoryBuffer->GetBufferSize(), pData, 0, NULL, NULL);
 	clEnqueueWriteBuffer(TheQueue, NonceBuffer, CL_TRUE, 0, pNonceMemoryBuffer->GetBufferSize(), 0, 0, NULL, NULL);

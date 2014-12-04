@@ -92,14 +92,20 @@ void ServerConnection::ResetThreads()
 
 //Get the total Hashes from Each Mining Thread.
 //Then reset their counter.
-unsigned int ServerConnection::Hashes()
+double ServerConnection::Hashes()
 {	
-	unsigned int nHashes = 0;
+	unsigned int unElapsed = m_tTIMER.ElapsedMilliseconds();
+
+	double dHashes = 0;
+
 	for (int nIndex = 0; nIndex < m_vecTHREADS.size(); nIndex++)
 	{
-		nHashes += m_vecTHREADS[nIndex]->GetHashes();
+		double KHASH = (double)m_vecTHREADS[nIndex]->GetHashes() / unElapsed;
+		m_vecTHREADS[nIndex]->SetLastHashRate(KHASH);
+
+		dHashes += KHASH;
 		m_vecTHREADS[nIndex]->SetHashes(0);
 	}
 			
-	return nHashes;
+	return dHashes;
 }

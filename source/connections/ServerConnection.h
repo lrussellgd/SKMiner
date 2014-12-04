@@ -26,11 +26,13 @@ protected:
 	bool m_bIsShutDown;
 	bool m_bDidShutDown;
 	int m_nThreads, m_nTimeout;
+	double m_dCurrentHashses;
 	LLP::Miner* m_pCLIENT;	
 	std::vector<MinerThread*> m_vecTHREADS;
 	LLP::Thread_t m_thTHREAD;
 	LLP::Timer    m_tTIMER;
 	std::string   m_szIP, m_szPORT;
+
 public:
 
 	ServerConnection();
@@ -39,12 +41,13 @@ public:
 	~ServerConnection();
 
 	void ResetThreads();
-	unsigned int Hashes();
+	double Hashes();
     
 	const bool						GetIsShuttingDown()		const			{	return this->m_bIsShutDown;				}
 	const bool						GetDidShutDown()		const			{	return this->m_bDidShutDown;			}
 	const int						GetThreads()			const			{	return this->m_nThreads;				}
 	const int						GetTimeout()			const			{	return this->m_nTimeout;				}
+	const double					GetCurrentHashes()		const			{	return this->m_dCurrentHashses;			}	
 	LLP::Miner*						GetClient()				const			{	return this->m_pCLIENT;					}
 	const std::vector<MinerThread*>	GetMiningThreads()		const			{	return this->m_vecTHREADS;				}
 	const LLP::Thread_t&			GetThread()				const			{	return this->m_thTHREAD;				}
@@ -55,6 +58,7 @@ public:
 	void SetIsShuttingDown(const bool bIsShuttingDown)						{	this->m_bIsShutDown = bIsShuttingDown;	}
 	void SetThreads(const int nThreads)										{	this->m_nThreads = nThreads;			}
 	void SetTimeout(const int nTimeout)										{	this->m_nTimeout = nTimeout;			}
+	void SetCurrentHashes(const double dHashes)								{	this->m_dCurrentHashses = dHashes;		}
 	void SetClient(LLP::Miner* pClient)										{	this->m_pCLIENT = pClient;				}
 	void SetMinerThreads(const std::vector<MinerThread*> vecMinerThreads)	{	this->m_vecTHREADS = vecMinerThreads;	}
 	void SetTimer(const LLP::Timer& tTimer)									{	this->m_tTIMER = tTimer;				}

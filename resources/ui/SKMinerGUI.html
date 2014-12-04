@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>SKMiner</title>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" href="scripts/jquery-ui-1.11.2-Redmond/jquery-ui.min.css">
+		<link rel="stylesheet" href="scripts/jquery-ui-1.11.2-Redmond/jquery-ui.theme.min.css">
+		<link rel="stylesheet" href="scripts/jquery.jqGrid-4.6.0/css/ui.jqgrid.css">
+		<script src="scripts/jquery-2.1.1.min.js" type="text/javascript"></script>
+		<script src="scripts/jquery-ui-1.11.2-Redmond/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="scripts/jquery.jqGrid-4.6.0/js/i18n/grid.locale-en.js" type="text/javascript"></script>
+		<script src="scripts/jquery.jqGrid-4.6.0/js/jquery.jqGrid.min.js" type="text/javascript"></script>
+		
+		<script type="text/javascript">
+
+			setInterval(function() {	
+
+				$.ajax({
+					dataType: "json",
+					url: 'http://localhost:8383/getmininginfo',
+					success: function(response) {
+			
+						var out = '';
+						var connArr = [];
+						
+						for(var index=0; index < response.miningInfo.length; index++)
+						{
+							var val = response.miningInfo[index];
+								
+							var conn = $.parseJSON('{ "id" : ' + val.id + ', "ip" : "' + val.ip + '", "port" : "' + val.port + '", "totalHashRate" : ' + val.totalHashes.toPrecision(7) + ', "algorithm" : "", "totalAccepted" : 0, "totalRejected" : 0, "gpus" : [] }');	
+						
+							out += "<table id='connectionList" + val.id + "'></table>";
+							out += "<br />";
+							out += "<table id='miningList" + val.id + "'></table>";
+							out += "<div id='miningPager'" + val.id + "'></div>";
+							
+							var gpuArr = [];
+							
+							for(var index2=0; index2 < val.threads.length; index2++)
+							{						
+								conn.algorithm = val.threads[index2].gpu.algorithm;
+								conn.totalAccepted += val.threads[index2].accepted;
+								conn.totalRejected += val.threads[index2].rejected;
+							
+								var gpu = $.parseJSON('{ "id" : ' + val.threads[index2].gpu.id + ', "hashRate" : ' + val.threads[index2].hashRate.toPrecision(7) + ',  "accepted" : ' + val.threads[index2].accepted + ', "rejected" : ' + val.threads[index2].rejected + ', "temperature" : ' + val.threads[index2].gpu.temperature + ', "fan" : ' + val.threads[index2].gpu.fan + ', "intensity" : ' + val.threads[index2].gpu.intentsity + ', "xintentsity" : ' + val.threads[index2].gpu.xintentsity + ', "rawintentsity" : ' + val.threads[index2].gpu.rawintentsity + '}');
+								
+								var gpuExists = false;
+								for(var gpuIndex = 0; gpuIndex < gpuArr.length; ++gpuIndex)
+								{
+									if(gpuArr[gpuIndex].id == gpu.id)
+									{
+										gpuExists = true;
+										gpuArr[gpuIndex].hashRate += gpu.hashRate;
+										gpuArr[gpuIndex].accepted += gpu.accepted;
+										gpuArr[gpuIndex].rejected += gpu.rejected;
+										break;
+									}
+								}
+								
+								if(gpuExists == false)
+								{
+									gpuArr.push(gpu);
+								}	
+							}
+							
+							conn.gpus = gpuArr;
+							connArr.push(conn);
+						}
+						
+						document.getElementById("miningData").innerHTML = out;
+						
+						for(var connInd=0; connInd < connArr.length; connInd++)
+						{
+							var connection = connArr[connInd];
+							
+							jQuery("#connectionList" + connection.id).jqGrid({
+								datatype: "local",
+								colNames:['ID', 'IP', 'Port',' Algorithm', 'Total HashRate KH/s', 'Total Accepted', 'Total Rejected'],
+								colModel:[ 	
+									{name: 'id', index: 'id', width:60, align: "right", sorttype:"int"},
+									{name: 'ip', index: 'ip', width:100, align: "right", sorttype:"text"},
+									{name: 'port', index: 'port', width:60, align: "right", sorttype:"text"},
+									{name: 'algorithm', index: 'algorithm', width:100, align: "right", sorttype:"text"},
+									{name: 'totalHashRate', index: 'totalHashRate', width:150, align: "right", sorttype:"float"},
+									{name: 'totalAccepted', index: 'totalAccepted', width:150, align: "right", sorttype:"int"},
+									{name: 'totalRejected', index: 'totalRejected', width:150, align: "right", sorttype:"int"}
+								],
+								sortname: 'id',
+								viewrecords: true,
+								height: 50,
+								sortorder: "desc",
+								caption:"Connection " + connection.id
+							});
+							
+							jQuery("#miningList" + connection.id).jqGrid({
+								datatype: "local",
+								colNames:['ID', 'Hash Rate KH/s', 'Accepted', 'Rejected', 'Temperature C', 'Fan', 'Intensity', 'X Intensity', 'Raw Intensity'],
+								colModel:[ 	
+										{name: 'id', index: 'id', width:60, align: "right", sorttype:"int"},
+										{name: 'hashRate', index: 'hashRate', width:151, align: "right", sorttype:"float"},
+										{name: 'accepted', index: 'accepted', width:60, align: "right", sorttype:"int"},
+										{name: 'rejected', index: 'rejected', width:60, align: "right", sorttype:"int"},
+										{name: 'temperature', index: 'temperature', width:90, align: "right", sorttype:"int"},
+										{name: 'fan', index: 'fan', width:60, align: "right", sorttype:"int"},
+										{name: 'intensity', index: 'intensity', width:90, align: "right", sorttype:"int"},
+										{name: 'xintentsity', index: 'xintentsity', width:90, align: "right", sorttype:"int"},
+										{name: 'rawintentsity', index: 'rawintentsity', width:100, align: "right", sorttype:"int"},
+								],
+								rowNum:6,
+								rowList:[10,20,30],
+								pager: '#miningPager' + connection.id,
+								sortname: 'id',
+								viewrecords: true,
+								sortorder: "desc",
+								caption:"GPUs for Connection " + connection.id
+							});
+							
+							jQuery("#connectionList" + connection.id).jqGrid('addRowData',i+1,connection);
+							
+							for(var i=0; i < connection.gpus.length; i++)
+							{					
+								jQuery("#miningList" + connection.id).jqGrid('addRowData',i+1,connection.gpus[i]);
+							}	
+						}
+					}
+				});
+				
+			}, 5000); 
+		</script> 
+		<script>
+			$(function() {
+				$( "#tabs" ).tabs();
+			});
+		</script>		
+	</head>
+
+	<body>
+		<h1 class="ui-widget-header ui-corner-all" style="width:800px">SKMiner</h1>
+		
+		<div id="tabs" style="width:800px">
+			 <ul>
+				<li><a href="#tabs-1">Info</a></li>
+				<li><a href="#tabs-2">Donations</a></li>
+				<li><a href="#tabs-3">Source</a></li>
+			</ul>
+			<div id="tabs-1">
+				<p>Created by <a href="https://bitcointalk.org/index.php?action=profile;u=164095">BitSlapper</a> For The <a href="http://coinshield.io/">CoinShield</a> GPU Channel</p>
+				<br />
+				<p>Optimized sk1024 OpenCL Kernel Created by <a href="https://bitcointalk.org/index.php?action=profile;u=215787">djm34</a></p>
+			</div>
+			<div id="tabs-2">	
+				<h3 class="ui-widget-header ui-corner-all" style="width:380px">CSD Donations Greatly Appreciated!</h3>
+				<p><b>BitSlapper</b>: 2QscvkN2ddvKHhQZD9RjYS6nGXSLSSgQYJ6peCCXV8RNP8FZj2r</p>
+				<br />
+				<p><b>djm34</b>: 2S2pCpRXyb8Lpre52U3Xjq2MguSdaea5YGjVTsJqgZBfL2S24ag</p>				
+			</div>
+			<div id="tabs-3">
+				<p>Source Code Can be Obtained From My Github <a href="https://github.com/BitSlapper/SKMiner">here</a>!
+			</div>
+		</div>
+		
+		
+		<br />
+		<div id="miningData">.</div>
+		
+	</body>
+</html>

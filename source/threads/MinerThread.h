@@ -30,10 +30,13 @@ class MinerThread
 		bool m_bBlockFound, m_bNewBlock, m_bReady;
 		LLP::Thread_t* m_pTHREAD;
 		unsigned int m_unHashes;
+		double m_dLastHashRate;
 		double total_mhashes_done;
 		boost::mutex* m_clLock;
 		bool m_bShutown;
 		bool m_bDidShutDown;
+		size_t m_stBlocksFound;
+		size_t m_stRejected;
 
 		HashFuncPtrType m_hashFunPtr;
 
@@ -61,18 +64,24 @@ class MinerThread
 		const bool				GetIsNewBlock()		const	{	return this->m_bNewBlock;			}
 		const bool				GetIsReady()		const	{	return this->m_bReady;				}
 		const unsigned int		GetHashes()			const	{	return this->m_unHashes;			}
+		const unsigned int		GetBlocksFound()	const	{	return this->m_stBlocksFound;		}
+		const unsigned int		GetRejected()		const	{	return this->m_stRejected;			}		
+		const double			GetLastHashRate()	const	{	return this->m_dLastHashRate;		}	
 		MinerData*				GetMinerData()		const	{	return this->m_pMinerData;			}
 		
 		///////////////////////////////////////////////////////////////////////////////
 		//Mutators
 		///////////////////////////////////////////////////////////////////////////////
-		void    SetIsShuttingDown(bool bIsShuttingDown)		{	this->m_bShutown = bIsShuttingDown; }
-		void	SetIsBlockFound(bool bFoundBlock)			{	this->m_bBlockFound = bFoundBlock;	}
-		void	SetIsNewBlock(bool bNewBlock)				{	this->m_bNewBlock = bNewBlock;		}
-		void	SetIsReady(bool bReady)						{	this->m_bReady = bReady;			}
-		void	SetHashes(unsigned int unHashes)			{	this->m_unHashes = unHashes;		}
-		void	SetMinerData(MinerData* pMinerData)			{	this->m_pMinerData = pMinerData;	}
-		void	SetHashFunc(HashFuncPtrType hashFunc)		{	this->m_hashFunPtr = hashFunc;		}
+		void    SetIsShuttingDown(const bool bIsShuttingDown)		{	this->m_bShutown = bIsShuttingDown;		}
+		void	SetIsBlockFound(const bool bFoundBlock)				{	this->m_bBlockFound = bFoundBlock;		}
+		void	SetIsNewBlock(const bool bNewBlock)					{	this->m_bNewBlock = bNewBlock;			}
+		void	SetIsReady(const bool bReady)						{	this->m_bReady = bReady;				}
+		void	SetHashes(const unsigned int unHashes)				{	this->m_unHashes = unHashes;			}
+		void	SetLastHashRate(double dLastRate)					{	this->m_dLastHashRate = dLastRate;		}
+		void	SetBlocksFound(const unsigned int unBlocksFound)	{	this->m_stBlocksFound = unBlocksFound;	}
+		void	SetRejected(const unsigned int unRejected)			{	this->m_stRejected = unRejected;		}	
+		void	SetMinerData(MinerData* pMinerData)					{	this->m_pMinerData = pMinerData;		}
+		void	SetHashFunc(HashFuncPtrType hashFunc)				{	this->m_hashFunPtr = hashFunc;			}
 
 };
 

@@ -27,8 +27,16 @@ namespace LLP
 
 	Connection::Connection(Socket_t* SOCKET_IN, DDOS_Filter* DDOS_IN)
 	{
-		this->SOCKET = SOCKET_IN;
-		this->DDOS = new DDOS_Filter(*DDOS_IN);
+		if (SOCKET_IN)
+		{
+			this->SOCKET = SOCKET_IN;
+		}
+
+		if (DDOS_IN)
+		{
+			this->DDOS = new DDOS_Filter(*DDOS_IN);
+		}
+		
 		this->CONNECTED = true;
 		this->TIMER = new Timer();
 		this->TIMER->Start();

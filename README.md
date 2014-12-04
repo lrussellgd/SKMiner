@@ -44,9 +44,11 @@ BUILDING
 
 You will need these libraries to build from source:
 
-jansson 2.7, boost 1.56.0, OpenSSL
+jansson 2.7, boost 1.56.0, OpenSSL, json spirit
 
-You will also need the AMD ADL files. See the readme.txt in /source/ADL_SDK
+You will also need the AMD ADL files. See the readme.txt in /source/ADL_SDK 
+
+and of course the AMD APP SDK
 
 
 Windows users can build from source right now, providing you have the libraries. I built using VS2013.

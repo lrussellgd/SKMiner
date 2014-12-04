@@ -24,11 +24,16 @@
 #include "../gpu/GPUData.h"
 #include "../driver/ADL.h"
 #include "../compute/CLFuncs.h"
+#include "../compute/BaseComputeDevice.h"
 #include "../config/RunOptions.h"
 #include "../config/ConfigConnection.h"
 #include "../config/GPUSetting.h"
 #include "../connections/SKServerConnection.h"
 #include "../utilities/JSONUtils.h"
+#include "../threads/MinerThread.h"
+#include "../data/MinerData.h"
+
+#include "../web/WebServer.h"
 
 using namespace std;
 using namespace boost::gregorian;
@@ -72,6 +77,10 @@ void Application::Initialize(std::map<std::string,std::string> arguments)
 	
 	if (CheckOptions())
 	{
+
+		m_pEventManager = Events::EventManager::GetInstance();
+		m_pEventManager->Initialize();
+
 		m_vecGPUData = CreateOpenCLDevices(m_pRunOptions);
 		m_vecConnection = m_pRunOptions->GetConnections();
 		m_pADL = new ADL(m_vecGPUData);
@@ -81,6 +90,20 @@ void Application::Initialize(std::map<std::string,std::string> arguments)
 		//ssVersion << VERSION;
 		//m_pUIData->SetParameter("VERSION", ssVersion.str());
 		//m_pUIData->SetParameter("DATE", szToday);
+
+		//httpserver(8383);
+		//MyStubServer s(httpserver);
+		//s.StartListening();
+
+		//s.StopListening();
+
+		//jsonrpc::HttpServer httpServer(8383);
+		//m_pAPIServer = new APIServer(httpServer);
+
+		//m_pAPIServer->StartListening();
+
+		m_pAPIServer = new Http::Server::WebServer("127.0.0.1", "8383", "C:\\");
+		m_pAPIServer->Run();
 
 		m_vecLog.clear();
 		std::string TheURL = m_vecConnection[0]->GetURL();
@@ -98,6 +121,20 @@ void Application::Initialize(std::map<std::string,std::string> arguments)
 
 void Application::Shutdown()
 {
+	
+	/*if (m_pAPIServer)
+	{
+		m_pAPIServer->StopListening();
+		delete(m_pAPIServer);
+		m_pAPIServer = NULL;
+	}*/
+
+	if (m_pAPIServer)
+	{
+		delete(m_pAPIServer);
+		m_pAPIServer = NULL;
+	}
+
 	m_vecLog.clear();
 
 	
@@ -145,6 +182,8 @@ void Application::Shutdown()
 		delete(m_pRunOptions);
 		m_pRunOptions = NULL;
 	}
+
+	m_pEventManager->Shutdown();
 }
 
 void Application::Log(std::string szLogStr)
@@ -400,3 +439,6 @@ bool Application::CheckOptions()
 	return true;
 }
 
+void Application::HandleEvent(Events::Event* pEvent)
+{
+}

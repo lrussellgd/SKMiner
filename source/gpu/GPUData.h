@@ -95,7 +95,7 @@ public:
 	const	unsigned int	GetMaxHashes()				const			{	return this->m_unMaxHashes;				}
 	const	float			GetGPUVDDC()				const			{	return this->m_fGPUVDDC;				}
 	const	float			GetGPUTemp()				const			{	return this->m_fGPUTemp;				}
-	const	size_t			GetWorkSize()				const			{	return this->m_unWorkSize;				}
+	const	size_t&			GetWorkSize()				const			{	return this->m_unWorkSize;				}
 	const	std::string&	GetName()					const			{	return this->m_szName;					}
 	const	std::string&	GetDevicePath()				const			{	return this->m_szDevicePath;			}
 	BaseGPU*				GetGPU()					const			{	return this->m_pGPU;					}
@@ -119,7 +119,7 @@ public:
 	void					SetGPUMemclockExit(const int nMemExit)					{	this->m_nGPUMemclockExit = nMemExit;	}
 	void					SetHashes(unsigned int unHashes)						{	this->m_unHashes = unHashes;			}
 	void					SetMaxHashes(const unsigned int unMaxHashes)			{	this->m_unMaxHashes = unMaxHashes;		}
-	void					SetWorksize(const size_t unWorkSize)					{	this->m_unWorkSize = unWorkSize;		}
+	void					SetWorksize(const size_t& unWorkSize)					{	this->m_unWorkSize = unWorkSize;		}
 	void					SetGPUTemp(const float fGPUTemp)						{	this->m_fGPUTemp = fGPUTemp;			}
 	void					SetGPUVDDC(const float fGPUVDDC)						{	this->m_fGPUVDDC = fGPUVDDC;			}
 	void					SetName(const std::string& szName)						{	this->m_szName = szName;				}

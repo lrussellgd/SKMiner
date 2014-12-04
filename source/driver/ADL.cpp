@@ -208,6 +208,9 @@ ADL::ADL(std::vector<GPUData*> gpus)
 			continue;
 		}
 
+		if (nLastAdapter == adapterId)
+			continue;
+
 		m_nNumDevices++;
 		nLastAdapter = adapterId;
 		if(adapterId == 0)

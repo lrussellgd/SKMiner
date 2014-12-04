@@ -11,6 +11,8 @@
 #ifndef _APPLICATION_H_
 #define _APPLICATION_H_
 
+//#define MHD_PLATFORM_H
+
 #include <stdio.h>
 #include <string>
 #include <iostream>
@@ -21,6 +23,10 @@
 #include "../config/ConfigConnection.h"
 #include <jansson.h>
 
+#include "../core/Event.h"
+#include "../core/EventManager.h"
+#include "../core/IListener.h"
+
 #define VERSION 1.0
 
 class ADL;
@@ -28,7 +34,16 @@ class GPUData;
 class RunOptions;
 class ConfigConnection;
 
-class Application
+namespace Http
+{
+	namespace Server
+	{
+		class WebServer;
+	}
+}
+
+
+class Application : public IListener
 {
 
 private:
@@ -42,7 +57,10 @@ private:
 
 	//UIData* m_pUIData;
 	
+	//APIServer* m_pAPIServer;
+	Http::Server::WebServer* m_pAPIServer;
 	ADL* m_pADL;
+	Events::EventManager* m_pEventManager;
 	RunOptions* m_pRunOptions;
 	std::vector<std::string> m_vecLog;
 	std::vector<GPUData*> m_vecGPUData;
@@ -62,6 +80,8 @@ protected:
 
 	static Application* m_app;
 
+	void HandleEvent(Events::Event* pEvent);
+
 public:
 
 	~Application();
@@ -76,6 +96,9 @@ public:
     void Shutdown();
 
 	void Log(std::string szLogStr);
+
+	const std::vector<ServerConnection*>& GetConnections() const { return this->m_vecServerConnections; }
+	ADL* GetADL() const { return this->m_pADL; }
 };
 
 #endif //_APPLICATION_H_

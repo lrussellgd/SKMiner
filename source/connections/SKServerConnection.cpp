@@ -64,6 +64,7 @@ SKServerConnection::SKServerConnection(std::vector<GPUData*> gpus, std::string i
 
 		MinerThread* pThread = new SKMinerThread((SKMinerData*)pMinerData);
 		pThread->SetHashFunc(sk1024_kernel_djm2);
+
 		m_vecTHREADS.push_back(pThread);
 
 		int currThreads = gpus[nIndex]->GetGPU()->GetGPUSetting()->GetThreads();
@@ -80,6 +81,7 @@ SKServerConnection::SKServerConnection(std::vector<GPUData*> gpus, std::string i
 
 				MinerThread* pThread = new SKMinerThread((SKMinerData*)pMinerData);
 				pThread->SetHashFunc(sk1024_kernel_djm2);
+
 				m_vecTHREADS.push_back(pThread);
 			}
 		}
@@ -168,11 +170,12 @@ void SKServerConnection::ServerThread()
 			/** Rudimentary Meter **/
 			if (m_tTIMER.Elapsed() > 10)
 			{
-				unsigned int nElapsed = m_tTIMER.ElapsedMilliseconds();
-				unsigned int nHashes = Hashes();
-
-				double KHASH = (double)nHashes / nElapsed;
-				printf("[METERS] %u Hashes | %f KHash/s | Height = %u\n", nHashes, KHASH, nBestHeight);
+				//unsigned int nElapsed = m_tTIMER.ElapsedMilliseconds();
+				//unsigned int nHashes = Hashes();
+				double KHASH = Hashes();
+				m_dCurrentHashses = KHASH;
+				//double KHASH = (double)nHashes / nElapsed;
+				printf("[METERS] %f KHash/s | Height = %u\n", KHASH, nBestHeight);
 
 				m_tTIMER.Reset();
 			}
@@ -234,11 +237,14 @@ void SKServerConnection::ServerThread()
 					if (RESPONSE == 200)
 					{
 						printf("[MASTER] Block Accepted By Coinshield Network.\n");
+
+						m_vecTHREADS[nIndex]->SetBlocksFound(m_vecTHREADS[nIndex]->GetBlocksFound() + 1);
 					}
 					else if (RESPONSE == 201)
 					{
 						printf("[MASTER] Block Rejected by Coinshield Network.\n");
 
+						m_vecTHREADS[nIndex]->SetRejected(m_vecTHREADS[nIndex]->GetRejected() + 1);
 						m_vecTHREADS[nIndex]->SetIsNewBlock(true);
 						m_vecTHREADS[nIndex]->SetIsBlockFound(false);
 					}
