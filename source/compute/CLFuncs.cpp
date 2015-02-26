@@ -42,7 +42,7 @@ std::vector<GPUData*> CreateOpenCLDevices(RunOptions* options)
 	{
 		bHasDevices = true;
 	}
-	
+
 	for(size_t index = 0; index < platformSize; ++index)
 	{
 		cl::Platform plat = vecPlatforms[index];
@@ -53,7 +53,6 @@ std::vector<GPUData*> CreateOpenCLDevices(RunOptions* options)
 		if( !amdRange.empty()) 
 		{
 			//Found AMD OpenCL Implementation
-
 			std::stringstream ssName;
 			ssName << ".\\resources\\kernel\\" << algorithmName << ".cl";
 
@@ -71,7 +70,6 @@ std::vector<GPUData*> CreateOpenCLDevices(RunOptions* options)
 			{
 				GPUData* gpuDta = new GPUData();
 				gpuDta->SetID((int)devIndex);
-				gpuDta->SetGPU(new ADLGPU());
 
 				GPUSetting* pGPUSetting;
 
@@ -176,7 +174,7 @@ std::vector<GPUData*> CreateOpenCLDevices(RunOptions* options)
 					pGPUSetting->SetIsEnabled(bIsEnabled);
 				}
 
-				gpuDta->GetGPU()->SetGPUSetting(pGPUSetting);
+				gpuDta->SetGPUSetting(pGPUSetting);
 
 				cl::Device currDevice = amdDevices[devIndex];
 
@@ -196,52 +194,52 @@ std::vector<GPUData*> CreateOpenCLDevices(RunOptions* options)
 				cl::CommandQueue commQueue(amdDev->GetContext(), amdDev->GetDeviceID(), 0, &status);
 				amdDev->SetCommandQueue(commQueue);
 
-				if (gpuDta->GetGPU()->GetGPUSetting()->GetLookupGap() <= 0)
+				if (gpuDta->GetGPUSetting()->GetLookupGap() <= 0)
 				{
 					if (devIndex != 0 && settings.size() > 0 && settings[0]->GetLookupGap() > 0)
 					{
-						gpuDta->GetGPU()->GetGPUSetting()->SetLookupGap(settings[0]->GetLookupGap());
+						gpuDta->GetGPUSetting()->SetLookupGap(settings[0]->GetLookupGap());
 					}
 					else
 					{
-						gpuDta->GetGPU()->GetGPUSetting()->SetLookupGap(2);
+						gpuDta->GetGPUSetting()->SetLookupGap(2);
 					}
 				}
 
-				if (gpuDta->GetGPU()->GetGPUSetting()->GetVectors() <= 0)
+				if (gpuDta->GetGPUSetting()->GetVectors() <= 0)
 				{
 					if (devIndex != 0 && settings.size() > 0 && settings[0]->GetVectors() > 0)
 					{
-						gpuDta->GetGPU()->GetGPUSetting()->SetVectors(settings[0]->GetVectors());
+						gpuDta->GetGPUSetting()->SetVectors(settings[0]->GetVectors());
 					}
 					else
 					{
-						gpuDta->GetGPU()->GetGPUSetting()->SetVectors(amdDev->GetPreferredVectorWidth());
+						gpuDta->GetGPUSetting()->SetVectors(amdDev->GetPreferredVectorWidth());
 					}
 				}
 
-				if (gpuDta->GetGPU()->GetGPUSetting()->GetWorkSize() <= 0)
+				if (gpuDta->GetGPUSetting()->GetWorkSize() <= 0)
 				{
 					if (devIndex != 0 && settings.size() > 0 && settings[0]->GetWorkSize() > 0 && settings[0]->GetWorkSize() <= amdDev->GetMaxWorkGroupSize())
 					{
-						gpuDta->GetGPU()->GetGPUSetting()->SetWorkSize(settings[0]->GetWorkSize());
+						gpuDta->GetGPUSetting()->SetWorkSize(settings[0]->GetWorkSize());
 					}
 					else
 					{
-						gpuDta->GetGPU()->GetGPUSetting()->SetWorkSize(amdDev->GetMaxWorkGroupSize());
+						gpuDta->GetGPUSetting()->SetWorkSize(amdDev->GetMaxWorkGroupSize());
 					}
 				}
-				else if (gpuDta->GetGPU()->GetGPUSetting()->GetWorkSize() > amdDev->GetMaxWorkGroupSize())
+				else if (gpuDta->GetGPUSetting()->GetWorkSize() > amdDev->GetMaxWorkGroupSize())
 				{
-					gpuDta->GetGPU()->GetGPUSetting()->SetWorkSize(amdDev->GetMaxWorkGroupSize());
+					gpuDta->GetGPUSetting()->SetWorkSize(amdDev->GetMaxWorkGroupSize());
 				}
 
 
 				gpuDta->SetDevice(amdDev);
 
-				if (gpuDta->GetGPU()->GetGPUSetting()->GetThreadConcurrency() <= 0 && devIndex != 0 && settings.size() > 0 && settings[0]->GetThreadConcurrency() > 0)
+				if (gpuDta->GetGPUSetting()->GetThreadConcurrency() <= 0 && devIndex != 0 && settings.size() > 0 && settings[0]->GetThreadConcurrency() > 0)
 				{
-					gpuDta->GetGPU()->GetGPUSetting()->SetThreadConcurrency(settings[0]->GetThreadConcurrency());
+					gpuDta->GetGPUSetting()->SetThreadConcurrency(settings[0]->GetThreadConcurrency());
 				}
 				else
 				{
@@ -249,11 +247,11 @@ std::vector<GPUData*> CreateOpenCLDevices(RunOptions* options)
 				}				
 
 				std::stringstream csoptions;
-				csoptions << "-D LOOKUP_GAP=" << gpuDta->GetGPU()->GetGPUSetting()->GetLookupGap();
-				csoptions << " -D CONCURRENT_THREADS=" << gpuDta->GetGPU()->GetGPUSetting()->GetThreadConcurrency();
-				csoptions << " -D WORKSIZE=" << gpuDta->GetGPU()->GetGPUSetting()->GetWorkSize();
-				csoptions << " -D VECTORS=" << gpuDta->GetGPU()->GetGPUSetting()->GetVectors();
-				csoptions << " -D WORKVEC=" << gpuDta->GetGPU()->GetGPUSetting()->GetWorkSize() * gpuDta->GetGPU()->GetGPUSetting()->GetVectors();
+				csoptions << "-D LOOKUP_GAP=" << gpuDta->GetGPUSetting()->GetLookupGap();
+				csoptions << " -D CONCURRENT_THREADS=" << gpuDta->GetGPUSetting()->GetThreadConcurrency();
+				csoptions << " -D WORKSIZE=" << gpuDta->GetGPUSetting()->GetWorkSize();
+				csoptions << " -D VECTORS=" << gpuDta->GetGPUSetting()->GetVectors();
+				csoptions << " -D WORKVEC=" << gpuDta->GetGPUSetting()->GetWorkSize() * gpuDta->GetGPUSetting()->GetVectors();
 
 				std::string devInfo = amdDevices[devIndex].getInfo<CL_DEVICE_EXTENSIONS>();
 				
@@ -336,9 +334,9 @@ std::vector<GPUData*> CreateOpenCLDevices(RunOptions* options)
 
 					pKernel->SetName(kernelName);
 					pKernel->SetKernel(allKernels[kernelIndex]);
-					if (gpuDta->GetGPU()->GetGPUSetting()->GetWorkSize() < wrkSize)
+					if (gpuDta->GetGPUSetting()->GetWorkSize() < wrkSize)
 					{
-						pKernel->SetWorksize(gpuDta->GetGPU()->GetGPUSetting()->GetWorkSize());
+						pKernel->SetWorksize(gpuDta->GetGPUSetting()->GetWorkSize());
 					}
 					else
 					{
@@ -372,6 +370,338 @@ std::vector<GPUData*> CreateOpenCLDevices(RunOptions* options)
 	return gpuDevices;
 }
 
+std::vector<GPUData*> CreateOpenCLDevices(RunOptions* options, std::vector<GPUSetting*> gpuSettings)
+{
+	std::string algorithmName = options->GetAlgorithm();
+
+	std::vector<GPUData*> gpuDevices;
+
+	std::vector<cl::Platform> vecPlatforms;
+	cl::Platform::get(&vecPlatforms);
+
+	size_t platformSize = vecPlatforms.size();
+
+	bool bHasDevices = false;
+	std::string szDevices = options->GetDevices();
+	boost::trim(szDevices);
+
+	if (szDevices.compare("") != 0)
+	{
+		bHasDevices = true;
+	}
+
+	for (size_t index = 0; index < platformSize; ++index)
+	{
+		cl::Platform plat = vecPlatforms[index];
+
+		std::string platformName = plat.getInfo<CL_PLATFORM_VENDOR>();
+
+		boost::iterator_range<std::string::iterator> amdRange = boost::algorithm::ifind_first(platformName, "Advanced Micro Devices");
+		if (!amdRange.empty())
+		{
+			//Found AMD OpenCL Implementation
+
+			std::stringstream ssName;
+			ssName << ".\\resources\\kernel\\" << algorithmName << ".cl";
+
+			std::ifstream programFile(ssName.str());
+			std::string programString(std::istreambuf_iterator<char>(programFile), (std::istreambuf_iterator<char>()));
+			cl::Program::Sources source(1, std::make_pair(programString.c_str(), programString.length() + 1));
+
+
+			std::vector<cl::Device> amdDevices;
+			plat.getDevices(CL_DEVICE_TYPE_GPU, &amdDevices);
+
+			for (size_t devIndex = 0; devIndex < amdDevices.size(); ++devIndex)
+			{
+				cl::Device currDevice = amdDevices[devIndex];
+				CLDevice* amdDev = new CLDevice(currDevice);
+				amdDev->SetPlatform(plat);
+				amdDev->SetDeviceIndex(devIndex);
+
+				GPUData* gpuDta = new GPUData();
+				gpuDta->SetID((int)devIndex);
+
+				GPUSetting* pGPUSetting;
+
+				std::cout << "Finding GPU Settings for OpenCL Device Named: " << amdDev->GetName() << std::endl;
+				std::cout << std::endl;
+
+				for (size_t settingIndex = 0; settingIndex < gpuSettings.size(); ++settingIndex)
+				{
+					if (settingIndex == 0)
+					{
+						pGPUSetting = gpuSettings[settingIndex];
+					}
+					else if (gpuSettings[settingIndex]->GetDeviceName().find(amdDev->GetName()) != std::string::npos)
+					{
+						//Use the lowest settings if multiple cards have the same name
+						//For Example: R9 280X and R9 280 both display the name 'Tahiti' for OpenCL
+						if (pGPUSetting->GetDeviceName().find(amdDev->GetName()) != std::string::npos && gpuSettings[settingIndex]->GetShaders() < pGPUSetting->GetShaders())
+						{
+							pGPUSetting = gpuSettings[settingIndex];
+						}
+						else
+						{
+							pGPUSetting = gpuSettings[settingIndex];
+						}
+					}
+				}
+
+				bool bIsEnabled = true;
+				if (bHasDevices)
+				{
+					std::string strInd = std::to_string(devIndex);
+					if (szDevices.find(strInd) == std::string::npos)
+					{
+						bIsEnabled = false;
+					}
+				}
+
+				if (pGPUSetting == NULL)
+				{
+					std::cout << "Failed to Find GPU Settings for OpenCL Device Named: " << amdDev->GetName() << std::endl;
+					std::cout << std::endl;
+
+					pGPUSetting = new GPUSetting();
+					pGPUSetting->SetIsEnabled(bIsEnabled);
+					pGPUSetting->SetThreads(1);
+					pGPUSetting->SetDeviceName(amdDev->GetName());
+				}
+				else
+				{
+					std::cout << "Found GPU Settings for OpenCL Device Named: " << pGPUSetting->GetDeviceName() << std::endl;
+					std::cout << std::endl;
+
+					if (pGPUSetting->GetEngineClock() < 0)
+					{
+						pGPUSetting->SetEngineClock(0);
+					}
+
+					if (pGPUSetting->GetMemclock() < 0)
+					{
+						pGPUSetting->SetMemclock(0);
+					}
+
+					if (pGPUSetting->GetShaders() < 0)
+					{
+						pGPUSetting->SetShaders(0);
+					}
+
+					if (pGPUSetting->GetThreads() < 1)
+					{
+						pGPUSetting->SetThreads(1);
+					}
+
+					if (pGPUSetting->GetIntensity() <= 0 && pGPUSetting->GetXIntensity() <= 0 && pGPUSetting->GetRawIntensity() <= 0)
+					{
+						pGPUSetting->SetIntensity(8);
+						pGPUSetting->SetXIntensity(0);
+						pGPUSetting->SetRawIntensity(0);
+					}
+
+					if (pGPUSetting->GetThreadConcurrency() < 0)
+					{
+						pGPUSetting->SetThreadConcurrency(0);
+					}
+
+					if (pGPUSetting->GetLookupGap() < 0)
+					{
+						pGPUSetting->SetLookupGap(0);
+					}
+
+					if (pGPUSetting->GetWorkSize() <= 0)
+					{
+						pGPUSetting->SetWorkSize(64);
+					}
+
+					if (pGPUSetting->GetTargetTemp() < 0)
+					{
+						pGPUSetting->SetTargetTemp(0);
+					}
+
+					if (pGPUSetting->GetOverHeatTemp() < 0)
+					{
+						pGPUSetting->SetOverHeatTemp(0);
+					}
+
+					if (pGPUSetting->GetCutOffTemp() < 0)
+					{
+						pGPUSetting->SetCutOffTemp(0);
+					}
+
+					if (pGPUSetting->GetVectors() < 0)
+					{
+						pGPUSetting->SetVectors(0);
+					}
+
+					pGPUSetting->SetIsEnabled(bIsEnabled);
+				}
+
+				gpuDta->SetGPUSetting(pGPUSetting);
+
+				
+
+				cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)plat(), 0 };
+				cl_int status = -1;
+
+				cl::Context amdContext(CL_DEVICE_TYPE_GPU, cps, NULL, NULL, &status);
+				cl::Program amdProgram(amdContext, source);
+
+				amdDev->SetAlgorithm(algorithmName);
+				amdDev->SetContext(amdContext);
+
+				cl::CommandQueue commQueue(amdDev->GetContext(), amdDev->GetDeviceID(), 0, &status);
+				amdDev->SetCommandQueue(commQueue);
+
+				if (gpuDta->GetGPUSetting()->GetLookupGap() <= 0)
+				{
+					gpuDta->GetGPUSetting()->SetLookupGap(2);
+				}
+
+				if (gpuDta->GetGPUSetting()->GetVectors() <= 0)
+				{
+					gpuDta->GetGPUSetting()->SetVectors(amdDev->GetPreferredVectorWidth());
+				}
+
+				if (gpuDta->GetGPUSetting()->GetWorkSize() <= 0)
+				{
+					gpuDta->GetGPUSetting()->SetWorkSize(amdDev->GetMaxWorkGroupSize());
+				}
+				else if (gpuDta->GetGPUSetting()->GetWorkSize() > amdDev->GetMaxWorkGroupSize())
+				{
+					gpuDta->GetGPUSetting()->SetWorkSize(amdDev->GetMaxWorkGroupSize());
+				}
+
+				gpuDta->SetDevice(amdDev);
+
+				SetThreadConcurrency(gpuDta);
+
+				std::stringstream csoptions;
+				csoptions << "-D LOOKUP_GAP=" << gpuDta->GetGPUSetting()->GetLookupGap();
+				csoptions << " -D CONCURRENT_THREADS=" << gpuDta->GetGPUSetting()->GetThreadConcurrency();
+				csoptions << " -D WORKSIZE=" << gpuDta->GetGPUSetting()->GetWorkSize();
+				csoptions << " -D VECTORS=" << gpuDta->GetGPUSetting()->GetVectors();
+				csoptions << " -D WORKVEC=" << gpuDta->GetGPUSetting()->GetWorkSize() * gpuDta->GetGPUSetting()->GetVectors();
+
+				std::string devInfo = amdDevices[devIndex].getInfo<CL_DEVICE_EXTENSIONS>();
+
+				std::string devVersion = amdDevices[devIndex].getInfo<CL_DEVICE_VERSION>();
+				boost::iterator_range<std::string::iterator> devVersionRange = boost::algorithm::ifind_first(devVersion, "OpenCL 1.0");
+				if (devVersionRange.empty())
+				{
+					devVersionRange = boost::algorithm::ifind_first(devVersion, "OpenCL 1.1");
+					if (devVersionRange.empty())
+					{
+						std::string name = gpuDta->GetDevice()->GetName();
+
+						//OpenCL 1.2
+						boost::iterator_range<std::string::iterator> bitAlignRange = boost::algorithm::ifind_first(devInfo, "cl_amd_media_ops");
+						if (!bitAlignRange.empty())
+						{
+							csoptions << " -D BITALIGN";
+
+							if (name.compare("Cedar") == 0 || name.compare("Redwood") == 0 || name.compare("Juniper") == 0 ||
+								name.compare("Cypress") == 0 || name.compare("Hemlock") == 0 || name.compare("Caicos") == 0 ||
+								name.compare("Turks") == 0 || name.compare("Barts") == 0 || name.compare("Cayman") == 0 ||
+								name.compare("Antilles") == 0 || name.compare("Wrestler") == 0 || name.compare("Zacate") == 0 ||
+								name.compare("WinterPark") == 0)
+							{
+								csoptions << " -D BFI_INT";
+							}
+						}
+
+					}
+				}
+				else
+				{
+					csoptions << " -D OCL1";
+				}
+
+				csoptions << " -D GOFFSET";
+
+				std::string szCompilerOptions = csoptions.str();
+
+				try
+				{
+					std::vector<cl::Device> oneDevice;
+					oneDevice.push_back(((CLDevice*)gpuDta->GetDevice())->GetDeviceID());
+
+					cl_int result = amdProgram.build(oneDevice, szCompilerOptions.c_str());
+				}
+				catch (cl::Error e)
+				{
+					std::cout << e.what() << ": Error code " << e.err() << std::endl;
+
+					std::vector<cl::Device> devices = amdProgram.getInfo<CL_PROGRAM_DEVICES>();
+					const cl::Device dev = devices[0];
+
+					std::string build_log;
+					cl_int err = amdProgram.getBuildInfo(dev, CL_PROGRAM_BUILD_LOG, &build_log);
+
+					std::cout << "Start Build Log: " << std::endl;
+					std::cout << build_log << std::endl;
+					std::cout << "End Build Log: " << std::endl;
+				}
+
+				std::vector<cl::Kernel> allKernels;
+				amdProgram.createKernels(&allKernels);
+				for (size_t kernelIndex = 0; kernelIndex < allKernels.size(); ++kernelIndex)
+				{
+					CLKernel* pKernel = new CLKernel();
+
+					std::string kernelName = allKernels[kernelIndex].getInfo<CL_KERNEL_FUNCTION_NAME>();
+
+					size_t wrkSize;
+					allKernels[kernelIndex].getWorkGroupInfo(amdDevices[devIndex], CL_KERNEL_WORK_GROUP_SIZE, &wrkSize);
+
+					size_t prefWrkSize;
+					allKernels[kernelIndex].getWorkGroupInfo(amdDevices[devIndex], CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, &prefWrkSize);
+
+					size_t reqWGS[3];
+					allKernels[kernelIndex].getWorkGroupInfo(amdDevices[devIndex], CL_KERNEL_COMPILE_WORK_GROUP_SIZE, &reqWGS);
+
+					pKernel->SetName(kernelName);
+					pKernel->SetKernel(allKernels[kernelIndex]);
+					if (gpuDta->GetGPUSetting()->GetWorkSize() < wrkSize)
+					{
+						pKernel->SetWorksize(gpuDta->GetGPUSetting()->GetWorkSize());
+					}
+					else
+					{
+						pKernel->SetWorksize(wrkSize);
+					}
+					pKernel->SetPrefWorkSize(prefWrkSize);
+					pKernel->SetReqdWorkSizes(reqWGS);
+
+					amdDev->SetKernel(kernelName, pKernel);
+				}
+
+				gpuDta->SetDevice(amdDev);
+
+				std::cout << "Adding GPU Data for OpenCL Device Named: " << gpuDta->GetDevice()->GetName() << std::endl;
+				std::cout << std::endl;
+				gpuDevices.push_back(gpuDta);
+			}
+		}
+
+		boost::iterator_range<std::string::iterator> nvidiaRange = boost::algorithm::ifind_first(platformName, "NVIDIA");
+		if (!nvidiaRange.empty())
+		{
+			//Found NVIDIA OpenCL Implementation
+
+			//std::stringstream ssName;
+			//ssName << ".\\Resources\\Kernel\\" << algorithmName << ".cu";
+
+			std::vector<cl::Device> nvidiaDevices;
+			plat.getDevices(CL_DEVICE_TYPE_GPU, &nvidiaDevices);
+
+			cl::Context nvidiaContext(nvidiaDevices);
+		}
+	}
+
+	return gpuDevices;
+}
 
 void SetThreadConcurrency(GPUData* pGPU)
 {
@@ -381,19 +711,173 @@ void SetThreadConcurrency(GPUData* pGPU)
 		return;
 	}
 
-	if(pGPU->GetGPU()->GetGPUSetting()->GetThreadConcurrency() <= 0)
+	if(pGPU->GetGPUSetting()->GetThreadConcurrency() <= 0)
 	{
 		unsigned long long sixtyfours = clDevice->GetMaxMemoryAllocSize() / 131072ULL / 64ULL - 1ULL;
-		pGPU->GetGPU()->GetGPUSetting()->SetThreadConcurrency((int)(sixtyfours * 64));
-		if (pGPU->GetGPU()->GetGPUSetting()->GetShaders() > 0 && pGPU->GetGPU()->GetGPUSetting()->GetThreadConcurrency() > pGPU->GetGPU()->GetGPUSetting()->GetShaders()) 
+		pGPU->GetGPUSetting()->SetThreadConcurrency((int)(sixtyfours * 64));
+		if (pGPU->GetGPUSetting()->GetShaders() > 0 && pGPU->GetGPUSetting()->GetThreadConcurrency() > pGPU->GetGPUSetting()->GetShaders()) 
 		{
-			pGPU->GetGPU()->GetGPUSetting()->SetThreadConcurrency(pGPU->GetGPU()->GetGPUSetting()->GetThreadConcurrency() - (pGPU->GetGPU()->GetGPUSetting()->GetThreadConcurrency() % pGPU->GetGPU()->GetGPUSetting()->GetShaders()));
-			if (pGPU->GetGPU()->GetGPUSetting()->GetThreadConcurrency() > (pGPU->GetGPU()->GetGPUSetting()->GetShaders() * 5))
+			pGPU->GetGPUSetting()->SetThreadConcurrency(pGPU->GetGPUSetting()->GetThreadConcurrency() - (pGPU->GetGPUSetting()->GetThreadConcurrency() % pGPU->GetGPUSetting()->GetShaders()));
+			if (pGPU->GetGPUSetting()->GetThreadConcurrency() > (pGPU->GetGPUSetting()->GetShaders() * 5))
 			{
-				pGPU->GetGPU()->GetGPUSetting()->SetThreadConcurrency(pGPU->GetGPU()->GetGPUSetting()->GetShaders() * 5);
+				pGPU->GetGPUSetting()->SetThreadConcurrency(pGPU->GetGPUSetting()->GetShaders() * 5);
 			}
 		}
 	}
+}
+
+void ReInitializeCLDevice(GPUData* pGPUData)
+{
+	CLDevice* pCLDevice = dynamic_cast<CLDevice*>(pGPUData->GetDevice());
+	if (!pCLDevice)
+	{
+		return;
+	}
+
+	std::stringstream ssName;
+	ssName << ".\\resources\\kernel\\" << pCLDevice->GetAlgorithm() << ".cl";
+
+	std::ifstream programFile(ssName.str());
+	std::string programString(std::istreambuf_iterator<char>(programFile), (std::istreambuf_iterator<char>()));
+	cl::Program::Sources source(1, std::make_pair(programString.c_str(), programString.length() + 1));
+
+	
+
+	cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)pCLDevice->GetPlatform()(), 0 };
+	cl_int status = -1;
+
+	cl::Context amdContext(CL_DEVICE_TYPE_GPU, cps, NULL, NULL, &status);
+	cl::Program amdProgram(amdContext, source);
+
+	pCLDevice->SetContext(amdContext);
+
+	cl::CommandQueue commQueue(pCLDevice->GetContext(), pCLDevice->GetDeviceID(), 0, &status);
+	pCLDevice->SetCommandQueue(commQueue);
+
+	if (pGPUData->GetGPUSetting()->GetLookupGap() <= 0)
+	{
+		pGPUData->GetGPUSetting()->SetLookupGap(2);
+	}
+
+	if (pGPUData->GetGPUSetting()->GetVectors() <= 0)
+	{
+		pGPUData->GetGPUSetting()->SetVectors(pCLDevice->GetPreferredVectorWidth());
+	}
+
+	if (pGPUData->GetGPUSetting()->GetWorkSize() <= 0)
+	{
+		pGPUData->GetGPUSetting()->SetWorkSize(pCLDevice->GetMaxWorkGroupSize());
+	}
+	else if (pGPUData->GetGPUSetting()->GetWorkSize() > pCLDevice->GetMaxWorkGroupSize())
+	{
+		pGPUData->GetGPUSetting()->SetWorkSize(pCLDevice->GetMaxWorkGroupSize());
+	}
+	
+	pGPUData->SetDevice(pCLDevice);
+
+	SetThreadConcurrency(pGPUData);
+
+	std::stringstream csoptions;
+	csoptions << "-D LOOKUP_GAP=" << pGPUData->GetGPUSetting()->GetLookupGap();
+	csoptions << " -D CONCURRENT_THREADS=" << pGPUData->GetGPUSetting()->GetThreadConcurrency();
+	csoptions << " -D WORKSIZE=" << pGPUData->GetGPUSetting()->GetWorkSize();
+	csoptions << " -D VECTORS=" << pGPUData->GetGPUSetting()->GetVectors();
+	csoptions << " -D WORKVEC=" << pGPUData->GetGPUSetting()->GetWorkSize() * pGPUData->GetGPUSetting()->GetVectors();
+
+	std::string devInfo = pCLDevice->GetDeviceID().getInfo<CL_DEVICE_EXTENSIONS>();
+
+	std::string devVersion = pCLDevice->GetDeviceID().getInfo<CL_DEVICE_VERSION>();
+	boost::iterator_range<std::string::iterator> devVersionRange = boost::algorithm::ifind_first(devVersion, "OpenCL 1.0");
+	if (devVersionRange.empty())
+	{
+		devVersionRange = boost::algorithm::ifind_first(devVersion, "OpenCL 1.1");
+		if (devVersionRange.empty())
+		{
+			std::string name = pGPUData->GetDevice()->GetName();
+
+			//OpenCL 1.2
+			boost::iterator_range<std::string::iterator> bitAlignRange = boost::algorithm::ifind_first(devInfo, "cl_amd_media_ops");
+			if (!bitAlignRange.empty())
+			{
+				csoptions << " -D BITALIGN";
+
+				if (name.compare("Cedar") == 0 || name.compare("Redwood") == 0 || name.compare("Juniper") == 0 ||
+					name.compare("Cypress") == 0 || name.compare("Hemlock") == 0 || name.compare("Caicos") == 0 ||
+					name.compare("Turks") == 0 || name.compare("Barts") == 0 || name.compare("Cayman") == 0 ||
+					name.compare("Antilles") == 0 || name.compare("Wrestler") == 0 || name.compare("Zacate") == 0 ||
+					name.compare("WinterPark") == 0)
+				{
+					csoptions << " -D BFI_INT";
+				}
+			}
+
+		}
+	}
+	else
+	{
+		csoptions << " -D OCL1";
+	}
+
+	csoptions << " -D GOFFSET";
+
+	std::string szCompilerOptions = csoptions.str();
+
+	try
+	{
+		std::vector<cl::Device> oneDevice;
+		oneDevice.push_back(((CLDevice*)pGPUData->GetDevice())->GetDeviceID());
+
+		cl_int result = amdProgram.build(oneDevice, szCompilerOptions.c_str());
+	}
+	catch (cl::Error e)
+	{
+		std::cout << e.what() << ": Error code " << e.err() << std::endl;
+
+		std::vector<cl::Device> devices = amdProgram.getInfo<CL_PROGRAM_DEVICES>();
+		const cl::Device dev = devices[0];
+
+		std::string build_log;
+		cl_int err = amdProgram.getBuildInfo(dev, CL_PROGRAM_BUILD_LOG, &build_log);
+
+		std::cout << "Start Build Log: " << std::endl;
+		std::cout << build_log << std::endl;
+		std::cout << "End Build Log: " << std::endl;
+	}
+
+	std::vector<cl::Kernel> allKernels;
+	amdProgram.createKernels(&allKernels);
+	for (size_t kernelIndex = 0; kernelIndex < allKernels.size(); ++kernelIndex)
+	{
+		CLKernel* pKernel = new CLKernel();
+
+		std::string kernelName = allKernels[kernelIndex].getInfo<CL_KERNEL_FUNCTION_NAME>();
+
+		size_t wrkSize;
+		allKernels[kernelIndex].getWorkGroupInfo(pCLDevice->GetDeviceID(), CL_KERNEL_WORK_GROUP_SIZE, &wrkSize);
+
+		size_t prefWrkSize;
+		allKernels[kernelIndex].getWorkGroupInfo(pCLDevice->GetDeviceID(), CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, &prefWrkSize);
+
+		size_t reqWGS[3];
+		allKernels[kernelIndex].getWorkGroupInfo(pCLDevice->GetDeviceID(), CL_KERNEL_COMPILE_WORK_GROUP_SIZE, &reqWGS);
+
+		pKernel->SetName(kernelName);
+		pKernel->SetKernel(allKernels[kernelIndex]);
+		if (pGPUData->GetGPUSetting()->GetWorkSize() < wrkSize)
+		{
+			pKernel->SetWorksize(pGPUData->GetGPUSetting()->GetWorkSize());
+		}
+		else
+		{
+			pKernel->SetWorksize(wrkSize);
+		}
+		pKernel->SetPrefWorkSize(prefWrkSize);
+		pKernel->SetReqdWorkSizes(reqWGS);
+
+		pCLDevice->SetKernel(kernelName, pKernel);
+	}
+
+	pGPUData->SetDevice(pCLDevice);
 }
 
 
@@ -430,25 +914,9 @@ GPUData* CreateNewOpenCLDevice(GPUData* pMainGPUThread)
 	pNewGPU->SetIsActive(pMainGPUThread->GetIsActive());
 	pNewGPU->SetIsDisabled(pMainGPUThread->GetIsDisabled());
 	pNewGPU->SetID(pMainGPUThread->GetID());
-	pNewGPU->SetDeviceID(pMainGPUThread->GetDeviceID());
-	pNewGPU->SetGPUEngine(pMainGPUThread->GetGPUEngine());
-	pNewGPU->SetMinEngine(pMainGPUThread->GetMinEngine());
-	pNewGPU->SetGPUFan(pMainGPUThread->GetGPUFan());
-	pNewGPU->SetMinFan(pMainGPUThread->GetMinFan());
-	pNewGPU->SetGPUMemclock(pMainGPUThread->GetGPUMemclock());
-	pNewGPU->SetGPUMemDiff(pMainGPUThread->GetGPUMemDiff());
-	pNewGPU->SetGPUPowerTune(pMainGPUThread->GetGPUPowerTune());
-	pNewGPU->SetGPUEngineExit(pMainGPUThread->GetGPUEngineExit());
-	pNewGPU->SetGPUMemclockExit(pMainGPUThread->GetGPUMemclockExit());
+	pNewGPU->SetAdapterIndex(pMainGPUThread->GetAdapterIndex());
 	pNewGPU->SetHashes(pMainGPUThread->GetHashes());
 	pNewGPU->SetMaxHashes(pMainGPUThread->GetMaxHashes());
-	pNewGPU->SetWorksize(pMainGPUThread->GetGPUVDDC());
-	pNewGPU->SetGPUTemp(pMainGPUThread->GetGPUTemp());
-	pNewGPU->SetGPUVDDC(pMainGPUThread->GetWorkSize());
-	pNewGPU->SetName(pMainGPUThread->GetName());
-	pNewGPU->SetDevicePath(pMainGPUThread->GetDevicePath());
-	pNewGPU->SetGPU(pMainGPUThread->GetGPU()->DeepCopy());
-
 
 	cl::Device newCLDevice = amdDevices[devIndex];
 
@@ -470,11 +938,11 @@ GPUData* CreateNewOpenCLDevice(GPUData* pMainGPUThread)
 
 
 	std::stringstream csoptions;
-	csoptions << "-D LOOKUP_GAP=" << pNewGPU->GetGPU()->GetGPUSetting()->GetLookupGap();
-	csoptions << " -D CONCURRENT_THREADS=" << pNewGPU->GetGPU()->GetGPUSetting()->GetThreadConcurrency();
-	csoptions << " -D WORKSIZE=" << pNewGPU->GetGPU()->GetGPUSetting()->GetWorkSize();
-	csoptions << " -D VECTORS=" << pNewGPU->GetGPU()->GetGPUSetting()->GetVectors();
-	csoptions << " -D WORKVEC=" << pNewGPU->GetGPU()->GetGPUSetting()->GetWorkSize() * pNewGPU->GetGPU()->GetGPUSetting()->GetVectors();
+	csoptions << "-D LOOKUP_GAP=" << pNewGPU->GetGPUSetting()->GetLookupGap();
+	csoptions << " -D CONCURRENT_THREADS=" << pNewGPU->GetGPUSetting()->GetThreadConcurrency();
+	csoptions << " -D WORKSIZE=" << pNewGPU->GetGPUSetting()->GetWorkSize();
+	csoptions << " -D VECTORS=" << pNewGPU->GetGPUSetting()->GetVectors();
+	csoptions << " -D WORKVEC=" << pNewGPU->GetGPUSetting()->GetWorkSize() * pNewGPU->GetGPUSetting()->GetVectors();
 
 	std::string devInfo = newCLDevice.getInfo<CL_DEVICE_EXTENSIONS>();
 
@@ -557,9 +1025,9 @@ GPUData* CreateNewOpenCLDevice(GPUData* pMainGPUThread)
 
 		pKernel->SetName(kernelName);
 		pKernel->SetKernel(allKernels[kernelIndex]);
-		if (pNewGPU->GetGPU()->GetGPUSetting()->GetWorkSize() < wrkSize)
+		if (pNewGPU->GetGPUSetting()->GetWorkSize() < wrkSize)
 		{
-			pKernel->SetWorksize(pNewGPU->GetGPU()->GetGPUSetting()->GetWorkSize());
+			pKernel->SetWorksize(pNewGPU->GetGPUSetting()->GetWorkSize());
 		}
 		else
 		{
@@ -574,4 +1042,41 @@ GPUData* CreateNewOpenCLDevice(GPUData* pMainGPUThread)
 	pNewGPU->SetDevice(pNewCLDevice);
 
 	return pNewGPU;
+}
+
+std::vector<CLDevice*> GetCLGPUs(const std::string& szPlatform)
+{
+	std::vector<CLDevice*> foundGPUs;
+
+	std::vector<cl::Platform> vecPlatforms;
+	cl::Platform::get(&vecPlatforms);
+
+	size_t platformSize = vecPlatforms.size();
+
+	for (size_t index = 0; index < platformSize; ++index)
+	{
+		cl::Platform plat = vecPlatforms[index];
+
+		std::string platformName = plat.getInfo<CL_PLATFORM_VENDOR>();
+
+		boost::iterator_range<std::string::iterator> selectedRange = boost::algorithm::ifind_first(platformName, szPlatform);
+		if (!selectedRange.empty())
+		{
+			std::vector<cl::Device> gpuDevices;
+			plat.getDevices(CL_DEVICE_TYPE_GPU, &gpuDevices);
+
+			for (size_t devIndex = 0; devIndex < gpuDevices.size(); ++devIndex)
+			{
+				cl::Device currDevice = gpuDevices[devIndex];
+
+				CLDevice* gpuDev = new CLDevice(currDevice);
+				gpuDev->SetPlatform(plat);
+				gpuDev->SetDeviceIndex(devIndex);
+
+				foundGPUs.push_back(gpuDev);
+			}
+		}
+	}
+
+	return foundGPUs;
 }

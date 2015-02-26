@@ -46,9 +46,9 @@ void CalculateThreads(GPUData* pGPU, CLDevice* clDevice, CLKernel* clKernel, siz
 	*localThreads = clKernel->GetWorksize();
 
 	int minThreads = (int)(*localThreads);
-	int rawintensity = pGPU->GetGPU()->GetGPUSetting()->GetRawIntensity();
-	int xIntensity = pGPU->GetGPU()->GetGPUSetting()->GetXIntensity();
-	int intensity = pGPU->GetGPU()->GetGPUSetting()->GetIntensity();
+	int rawintensity = pGPU->GetGPUSetting()->GetRawIntensity();
+	int xIntensity = pGPU->GetGPUSetting()->GetXIntensity();
+	int intensity = pGPU->GetGPUSetting()->GetIntensity();
 
 
 	unsigned int threads = 0;
@@ -79,16 +79,16 @@ void CalculateThreads(GPUData* pGPU, CLDevice* clDevice, CLKernel* clKernel, siz
 		}
 	}
 
-	pGPU->GetGPU()->GetGPUSetting()->SetIntensity(intensity);
+	pGPU->GetGPUSetting()->SetIntensity(intensity);
 
 	*globalThreads = threads;
-	*hashes = threads * pGPU->GetGPU()->GetGPUSetting()->GetVectors();
+	*hashes = threads * pGPU->GetGPUSetting()->GetVectors();
 
 	*buffsize = (1 * threads); // return threads number
 
 	if ((*buffsize > clDevice->GetMaxMemoryAllocSize()) || (*buffsize == 0))
 	{
-		std::cout << "Error	Maximum buffer memory device " << pGPU->GetGPU()->GetAdapterIndex() << "supports says " << clDevice->GetMaxMemoryAllocSize() << " max_alloc" << std::endl;
+		std::cout << "Error	Maximum buffer memory device " << pGPU->GetAdapterIndex() << "supports says " << clDevice->GetMaxMemoryAllocSize() << " max_alloc" << std::endl;
 		std::cout << "Your settings come to " << buffsize << "bufsize" << std::endl;
 		return;
 	}
@@ -109,19 +109,7 @@ bool sk1024_kernel_djm2(MinerData* pMinerData)
 
 	if (clDevice == NULL)
 	{
-		std::cout << "Error! GPU Device " << ((SKMinerData*)pMinerData)->GetGPUData()->GetGPU()->GetAdapterIndex() << " doesn't have a valid OpenCL device initialized!" << std::endl;
-		return false;
-	}
-
-	if (clDevice->GetAddressBits() != 64)
-	{
-		std::cout << "Error! Must use setx GPU_FORCE_64BIT_PTR 1 !" << std::endl;
-		std::cout << "If this value is set then GPU Device " << ((SKMinerData*)pMinerData)->GetGPUData()->GetID() << " doesn't support 64 bit and is not valid for the sk1024 kernel!" << std::endl;
-		std::cout << "The specified Address Bits are " << clDevice->GetAddressBits() << std::endl;
-		std::cout << "Disable this device and restart the miner!" << std::endl;
-
-		system("pause");
-
+		std::cout << "Error! GPU Device " << ((SKMinerData*)pMinerData)->GetGPUData()->GetAdapterIndex() << " doesn't have a valid OpenCL device initialized!" << std::endl;
 		return false;
 	}
 
@@ -177,8 +165,7 @@ bool sk1024_kernel_djm2(MinerData* pMinerData)
 	SkeinProcess.setArg(3, NonceBuffer);
 	SkeinProcess.setArg(4, TheTarget);
 
-
-	cl_command_queue TheQueue = clDevice->GetCommandQueue()();
+ 	cl_command_queue TheQueue = clDevice->GetCommandQueue()();
 
 	clEnqueueWriteBuffer(TheQueue, DataMsg, CL_TRUE, 0, pDataMsgMemoryBuffer->GetBufferSize(), pData, 0, NULL, NULL);
 	clEnqueueWriteBuffer(TheQueue, NonceBuffer, CL_TRUE, 0, pNonceMemoryBuffer->GetBufferSize(), 0, 0, NULL, NULL);

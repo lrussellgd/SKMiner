@@ -13,15 +13,15 @@
 
 #include <string>
 #include "../base/IPrototype.h"
+#include "../base/Entity.h"
 
-class GPUSetting : public IPrototype
+class GPUSetting : public IPrototype, public Entity
 {
 
 private:
 
 	bool	m_bIsAutoEngine;
 	bool	m_bIsAutoFan;
-	bool	m_bHasFanSpeed;
 	bool	m_bIsEnabled;
 
 	int		m_nEngineClock;
@@ -44,6 +44,9 @@ private:
 	int		m_nVectors;
 
 	float	m_fVDDC;
+
+	std::string m_szDeviceID;
+	std::string m_szDeviceName;
 
 public:
 
@@ -76,7 +79,6 @@ public:
 	///////////////////////////////////////////////////////////////////////////////
 	const bool				GetIsAutoEngine()		const	{	return this->m_bIsAutoEngine;				}
 	const bool				GetIsAutoFan()			const	{	return this->m_bIsAutoFan;					}
-	const bool				GetHasFanSpeed()		const	{	return this->m_bHasFanSpeed;				}
 	const bool				GetIsEnabled()			const	{	return this->m_bIsEnabled;					}
 	const int				GetEngineClock()		const	{	return this->m_nEngineClock;				}
 	const int				GetMinEngineSpeed()		const	{	return this->m_nMinEngineSpeed;				}
@@ -97,33 +99,36 @@ public:
 	const int				GetWorkSize()			const	{	return this->m_nWorkSize;					}
 	const int				GetVectors()			const	{	return this->m_nVectors;					}
 	const float				GetVoltage()			const	{	return this->m_fVDDC;						}
+	const std::string&		GetDeviceID()			const	{	return this->m_szDeviceID;					}
+	const std::string&		GetDeviceName()			const	{	return this->m_szDeviceName;				}
 
 	///////////////////////////////////////////////////////////////////////////////
 	//Mutators
 	///////////////////////////////////////////////////////////////////////////////
-	void	SetIsAutoEngine(bool bIsAutoEngine)			{	this->m_bIsAutoEngine = bIsAutoEngine;		}
-	void	SetIsAutoFan(bool bIsAutoFan)				{	this->m_bIsAutoFan = bIsAutoFan;			}
-	void	SetHasFanSpeed(bool bHasFanSpeed)			{	this->m_bHasFanSpeed = bHasFanSpeed;		}
-	void	SetIsEnabled(bool bIsEnabled)				{	this->m_bIsEnabled = bIsEnabled;			}
-	void	SetEngineClock(int nEngineClock)			{	this->m_nEngineClock = nEngineClock;		}
-	void	SetMinEngineSpeed(int nMinEngineSpeed)		{	this->m_nMinEngineSpeed = nMinEngineSpeed;	}
-	void	SetMaxEngineSpeed(int nMaxEngineSpeed)		{	this->m_nMaxEngineSpeed = nMaxEngineSpeed;	}
-	void	SetMemclock(int nMemclock)					{	this->m_nMemclock = nMemclock;				}
-	void	SetPowerTune(int nPowerTune)				{	this->m_nPowerTune = nPowerTune;			}
-	void	SetThreads(int nThreads)					{	this->m_nThreads = nThreads;				}	
-	void	SetShaders(int nShaders)					{	this->m_nShaders = nShaders;				}
-	void	SetTargetFan(int nTargetFan)				{	this->m_nTargetFan = nTargetFan;			}
-	void	SetTargetTemp(int nTargetTemp)				{	this->m_nTargetTemp = nTargetTemp;			}
-	void	SetOverHeatTemp(int nOverHeatTemp)			{	this->m_nOverheatTemp = nOverHeatTemp;		}
-	void	SetCutOffTemp(int nCutOffTemp)				{	this->m_nCutOffTemp = nCutOffTemp;			}
-	void	SetIntensity(int nIntensity)				{	this->m_nIntensity = nIntensity;			}
-	void	SetRawIntensity(int nRawIntensity)			{	this->m_nRawintensity = nRawIntensity;		}
-	void	SetXIntensity(int nXIntensity)				{	this->m_nXIntensity = nXIntensity;			}
-	void	SetThreadConcurrency(int nTC)				{	this->m_nThreadConcurreny = nTC;			}
-	void	SetLookupGap(int nLookupGap)				{	this->m_nLookupGap = nLookupGap;			}
-	void	SetWorkSize(int nWorkSize)					{	this->m_nWorkSize = nWorkSize;				}
-	void	SetVectors(int nVectors)					{	this->m_nVectors = nVectors;				}
-	void	SetVoltage(float fVoltage)					{	this->m_fVDDC = fVoltage;					}
+	void	SetIsAutoEngine(bool bIsAutoEngine)				{	this->m_bIsAutoEngine = bIsAutoEngine;		}
+	void	SetIsAutoFan(bool bIsAutoFan)					{	this->m_bIsAutoFan = bIsAutoFan;			}
+	void	SetIsEnabled(bool bIsEnabled)					{	this->m_bIsEnabled = bIsEnabled;			}
+	void	SetEngineClock(int nEngineClock)				{	this->m_nEngineClock = nEngineClock;		}
+	void	SetMinEngineSpeed(int nMinEngineSpeed)			{	this->m_nMinEngineSpeed = nMinEngineSpeed;	}
+	void	SetMaxEngineSpeed(int nMaxEngineSpeed)			{	this->m_nMaxEngineSpeed = nMaxEngineSpeed;	}
+	void	SetMemclock(int nMemclock)						{	this->m_nMemclock = nMemclock;				}
+	void	SetPowerTune(int nPowerTune)					{	this->m_nPowerTune = nPowerTune;			}
+	void	SetThreads(int nThreads)						{	this->m_nThreads = nThreads;				}	
+	void	SetShaders(int nShaders)						{	this->m_nShaders = nShaders;				}
+	void	SetTargetFan(int nTargetFan)					{	this->m_nTargetFan = nTargetFan;			}
+	void	SetTargetTemp(int nTargetTemp)					{	this->m_nTargetTemp = nTargetTemp;			}
+	void	SetOverHeatTemp(int nOverHeatTemp)				{	this->m_nOverheatTemp = nOverHeatTemp;		}
+	void	SetCutOffTemp(int nCutOffTemp)					{	this->m_nCutOffTemp = nCutOffTemp;			}
+	void	SetIntensity(int nIntensity)					{	this->m_nIntensity = nIntensity;			}
+	void	SetRawIntensity(int nRawIntensity)				{	this->m_nRawintensity = nRawIntensity;		}
+	void	SetXIntensity(int nXIntensity)					{	this->m_nXIntensity = nXIntensity;			}
+	void	SetThreadConcurrency(int nTC)					{	this->m_nThreadConcurreny = nTC;			}
+	void	SetLookupGap(int nLookupGap)					{	this->m_nLookupGap = nLookupGap;			}
+	void	SetWorkSize(int nWorkSize)						{	this->m_nWorkSize = nWorkSize;				}
+	void	SetVectors(int nVectors)						{	this->m_nVectors = nVectors;				}
+	void	SetVoltage(float fVoltage)						{	this->m_fVDDC = fVoltage;					}
+	void	SetDeviceID(const std::string& szDeviceID)		{	this->m_szDeviceID = szDeviceID;			}
+	void	SetDeviceName(const std::string& szDeviceName)	{   this->m_szDeviceName = szDeviceName;		}
 };
 
 

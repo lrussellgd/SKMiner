@@ -16,14 +16,16 @@
 #include <map>
 
 #include "../base/IPrototype.h"
+#include "../base/Entity.h"
 
 class ConfigConnection;
 class GPUSetting;
 
-class RunOptions : public IPrototype
+class RunOptions : public IPrototype, public Entity
 {
 private:
 
+	bool							m_bIsAutoSettings;
 	std::string						m_szAlgorithm;
 	std::string						m_szDevices;
 	std::vector<ConfigConnection*>	m_vecConnections;
@@ -62,6 +64,7 @@ public:
 	///////////////////////////////////////////////////////////////////////////////
 	//Accessors
 	///////////////////////////////////////////////////////////////////////////////
+	const bool								GetIsAutoSettings()	const			{	return this->m_bIsAutoSettings;				}
 	const std::string&						GetAlgorithm()		const			{	return this->m_szAlgorithm;					}
 	const std::string&						GetDevices()		const			{	return this->m_szDevices;					}	
 	const std::vector<ConfigConnection*>	GetConnections()	const			{	return this->m_vecConnections;				}
@@ -70,6 +73,7 @@ public:
 	///////////////////////////////////////////////////////////////////////////////
 	//Mutators
 	///////////////////////////////////////////////////////////////////////////////
+	void	SetIsAutoSettings(const bool bIsAutoSettings)					{	this->m_bIsAutoSettings = bIsAutoSettings;		}
 	void	SetAlgorithm(const std::string& szAlgorithm)					{	this->m_szAlgorithm = szAlgorithm;				}
 	void	SetDevices(const std::string& szDevices)						{	this->m_szDevices = szDevices;					}
 	void	SetConnections(std::vector<ConfigConnection*> vecConnections)	{	this->m_vecConnections = vecConnections;		}

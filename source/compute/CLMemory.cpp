@@ -15,13 +15,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 CLMemory::CLMemory()
 {
+	this->m_enmEntityType = ENTITY_TYPE::CL_MEMORY;
 	this->m_pEmptyBuffer = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //Copy Constructor
 ///////////////////////////////////////////////////////////////////////////////
-CLMemory::CLMemory(const CLMemory& memory)
+CLMemory::CLMemory(const CLMemory& memory) : Entity(memory)
 {
 	this->m_szBufferName = memory.GetBufferName();
 	this->m_stBufferSize = memory.GetBufferSize();
@@ -35,6 +36,7 @@ CLMemory::CLMemory(const CLMemory& memory)
 ///////////////////////////////////////////////////////////////////////////////
 CLMemory& CLMemory::operator = (const CLMemory& memory)
 {
+	this->m_enmEntityType = memory.GetEntityType();
 	this->m_szBufferName = memory.GetBufferName();
 	this->m_stBufferSize = memory.GetBufferSize();
 	this->m_clMemBuffer = memory.GetBuffer();

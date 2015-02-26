@@ -12,9 +12,7 @@
 #define _INBOUND_H_
 
 #include "Connection.h"
-
-struct Service_t;
-struct Listener_t;
+#include <vector>
 
 namespace LLP
 {
@@ -24,26 +22,29 @@ namespace LLP
 	{
 	private:
 
-		Listener_t* LISTENER;
-		Endpoint_t* ENDPOINT;
-		Service_t IO_SERVICE;
-		std::string PORT;
+		std::vector<unsigned char> m_vecReadData;
+
+		void AsyncRead();
+		void HandleHeader(const boost::system::error_code& ec, std::size_t bytes_transferred);
+		void HandleLength(const boost::system::error_code& ec, std::size_t bytes_transferred);
+		void HandleRead(const boost::system::error_code& ec, std::size_t bytes_transferred);
+		void HandleComplete(const boost::system::error_code& ec, std::size_t bytes_transferred);
+
+		int m_nConnectionID;
 
 	public:
 
 		Inbound();
-		Inbound(std::string port);
+		Inbound(Socket_t* SOCKET_IN, DDOS_Filter* DDOS_IN);
 		Inbound(const Inbound& inbound);
 		Inbound& operator=(const Inbound& inbound);
 		~Inbound();
 
 		void Start();
-		void HandleAccept(const boost::system::error_code& ec);
-		void HandleWrite(const boost::system::error_code& ec, size_t numBytes);
 
-		const std::string&	GetPort()		const {		return this->PORT;		}
-		Listener_t*			GetListener()	const {		return this->LISTENER;	}
-		Endpoint_t*			GetEndpoint()	const {		return this->ENDPOINT;	}
+		const int GetConnectionID() const { return this->m_nConnectionID; }
+
+		void SetConnectionID(int connID) { this->m_nConnectionID = connID; }
 	};
 }
 

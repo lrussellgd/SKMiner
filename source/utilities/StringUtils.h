@@ -18,4 +18,8 @@
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
 std::vector<std::string> split(const std::string &s, char delim);
 
+std::string ToHex(const int nByte);
+std::string ToHex(const char chByte);
+std::string ToHex(const std::string& szBytes);
+
 #endif //_STRINGUTILS_H_

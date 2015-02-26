@@ -23,6 +23,7 @@ class CLDevice : public BaseComputeDevice
 {
 private:
 		
+	bool m_bHasAMDfp64, m_bHasKHRfp64;
 	unsigned int m_unIsEndianLittle;
 	unsigned int m_unAddressBits;
 	unsigned int m_unMaxClockFrequency;	
@@ -78,6 +79,8 @@ public:
 	///////////////////////////////////////////////////////////////////////////////
 	//Accessors
 	///////////////////////////////////////////////////////////////////////////////
+	const bool					GetHasAMDfp64()							const						{	return this->m_bHasAMDfp64;									}
+	const bool					GetHasKHRfp64()							const						{	return this->m_bHasKHRfp64;									}	
 	const unsigned int			GetIsAvailable();	
 	const unsigned int			GetIsLitteEndian()						const						{	return this->m_unIsEndianLittle;							}
 	const unsigned int			GetAddressBits()						const						{	return this->m_unAddressBits;								}
@@ -100,6 +103,8 @@ public:
 	///////////////////////////////////////////////////////////////////////////////
 	//Mutators
 	///////////////////////////////////////////////////////////////////////////////
+	void SetHasAMDfp64(bool bHasAMDfp64)															{	this->m_bHasAMDfp64 = bHasAMDfp64;							}		
+	void SetHasKHRfp64(bool bHasKHRfp64)															{	this->m_bHasKHRfp64 = bHasKHRfp64;							}
 	void SetIsLitteEndian(const unsigned int unIsLittleEndian)										{	this->m_unIsEndianLittle = unIsLittleEndian;				}
 	void SetAddressBits(const unsigned int unAddressBits)											{	this->m_unAddressBits = unAddressBits;						}
 	void SetMaxClockFrequency(const unsigned int unMaxClockFrequency)								{	this->m_unMaxClockFrequency = unMaxClockFrequency;			}

@@ -1,17 +1,18 @@
 #ifndef _ADLFUNCS_H_
 #define _ADLFUNCS_H_
 
-#if defined (__unix__)
-#	include <dlfcn.h>	//dyopen, dlsym, dlclose
-#	include <stdlib.h>
-#	include <string.h>	//memeset
-#else
-#	define NOMINMAX
-#	include <tchar.h>
-#endif
-
-
+#include "../base/OSVersion.h"
 #include "../ADL_SDK/adl_sdk.h"
+
+#if defined (__unix__)
+static _LOADSTR ADL_LIB_NAME = "libatiadlxx.so";
+static _LOADSTR ADL_LIB_NAME_2 = "libatiadlxy.so";
+static int ADL_LIB_FLAGS = RTLD_LAZY | RTLD_GLOBAL;
+#else if defined(_WIN32)
+static _LOADSTR ADL_LIB_NAME = _LOADSTR("atiadlxx.dll");
+static _LOADSTR ADL_LIB_NAME_2 = _LOADSTR("atiadlxy.dll");
+static int ADL_LIB_FLAGS = 0;
+#endif //__unix__
 
 // ADL Main
 typedef int ( *ADL_MAIN_CONTROL_CREATE )(ADL_MAIN_MALLOC_CALLBACK, int );
@@ -200,7 +201,11 @@ typedef int ( *ADL_OVERDRIVE6_POWERCONTROL_GET )(int iAdapterIndex, int *lpCurre
 typedef int ( *ADL_OVERDRIVE6_FANSPEED_SET )(int iAdapterIndex, ADLOD6FanSpeedValue *lpFanSpeedValue);
 typedef int ( *ADL_OVERDRIVE6_STATE_SET )(int iAdapterIndex, int iStateType, ADLOD6StateInfo *lpStateInfo);
 typedef int ( *ADL_OVERDRIVE6_POWERCONTROL_SET )(int iAdapterIndex, int iValue);
-
+typedef int ( *ADL_OVERDRIVE6_VOLTAGECONTROLINFO_GET )(int iAdapterIndex, ADLOD6VoltageControlInfo* lpVoltageControlInfo);
+typedef int ( *ADL_OVERDRIVE6_VOLTAGECONTROL_GET )(int iAdapterIndex, int* lpCurrentValue, int* lpDefaultValue);
+typedef int ( *ADL_OVERDRIVE6_VOLTAGECONTROL_SET )(int iAdapterIndex, int iValue);
+typedef int ( *ADL_OVERDRIVE6_FANSPEED_RESET )(int iAdapterIndex);
+typedef int ( *ADL_OVERDRIVE6_STATE_RESET)(int iAdapterIndex, int iStateType);
 
 // ADL I2C
 typedef int ( *ADL_DISPLAY_WRITEANDREADI2CREV_GET ) (int iAdapterIndex, int *lpMajor, int *lpMinor);

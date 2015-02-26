@@ -9,15 +9,7 @@
 #ifndef COINSHIELD_UINT1024_H
 #define COINSHIELD_UINT1024_H
 
-#include <limits.h>
-#include <stdio.h>
-#include <string.h>
-#include <string>
-#include <vector>
-
-typedef long long  int64;
-typedef unsigned long long  uint64;
-
+#include "../base/OSVersion.h"
 
 /** Base class without constructors for uint256, uint512, uint576, uint1024.
  * This makes the compiler let u use it in a union.

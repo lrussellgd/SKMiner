@@ -14,10 +14,17 @@
 #include <vector>
 
 class GPUData;
+class GPUSetting;
 class RunOptions;
+class CLDevice;
 
 std::vector<GPUData*> CreateOpenCLDevices(RunOptions* options);
+std::vector<GPUData*> CreateOpenCLDevices(RunOptions* options, std::vector<GPUSetting*> gpuSettings);
+
+void ReInitializeCLDevice(GPUData* pGPUData);
+
 GPUData* CreateNewOpenCLDevice(GPUData* pMainGPUThread);
+std::vector<CLDevice*> GetCLGPUs(const std::string& szPlatform = "Advanced Micro Devices");
 
 void SetThreadConcurrency(GPUData* pGPU);
 

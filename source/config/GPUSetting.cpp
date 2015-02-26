@@ -15,7 +15,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 GPUSetting::GPUSetting()
 {
-	m_bIsAutoEngine = m_bIsAutoFan = m_bHasFanSpeed = m_bIsEnabled = false;
+	this->m_enmEntityType = ENTITY_TYPE::GPU_SETTING;
+	m_bIsAutoEngine = m_bIsAutoFan = m_bIsEnabled = false;
 
 	m_nEngineClock = m_nMinEngineSpeed = m_nMaxEngineSpeed = m_nMemclock = m_nPowerTune = 0;
 	m_nThreads = m_nShaders = m_nTargetFan = m_nTargetTemp = m_nOverheatTemp = m_nCutOffTemp = 0;	
@@ -28,12 +29,11 @@ GPUSetting::GPUSetting()
 ///////////////////////////////////////////////////////////////////////////////
 //Copy Constructor
 ///////////////////////////////////////////////////////////////////////////////
-GPUSetting::GPUSetting(const GPUSetting& setting)
+GPUSetting::GPUSetting(const GPUSetting& setting) : Entity(setting)
 {
 	this->m_bIsEnabled = setting.GetIsEnabled();
 	this->m_bIsAutoEngine = setting.GetIsAutoEngine();
 	this->m_bIsAutoFan = setting.GetIsAutoFan();
-	this->m_bHasFanSpeed = setting.GetHasFanSpeed();
 	this->m_nEngineClock = setting.GetEngineClock();
 	this->m_nMinEngineSpeed = setting.GetMinEngineSpeed();
 	this->m_nMaxEngineSpeed = setting.GetMaxEngineSpeed();
@@ -60,10 +60,10 @@ GPUSetting::GPUSetting(const GPUSetting& setting)
 ///////////////////////////////////////////////////////////////////////////////
 GPUSetting& GPUSetting::operator=(const GPUSetting& setting)
 {
+	this->m_enmEntityType = setting.GetEntityType();
 	this->m_bIsEnabled = setting.GetIsEnabled();
 	this->m_bIsAutoEngine = setting.GetIsAutoEngine();
 	this->m_bIsAutoFan = setting.GetIsAutoFan();
-	this->m_bHasFanSpeed = setting.GetHasFanSpeed();
 	this->m_nEngineClock = setting.GetEngineClock();
 	this->m_nMinEngineSpeed = setting.GetMinEngineSpeed();
 	this->m_nMaxEngineSpeed = setting.GetMaxEngineSpeed();
@@ -102,7 +102,6 @@ GPUSetting* GPUSetting::Clone()
 
 	pGPUSetting->SetIsAutoEngine(this->m_bIsAutoEngine);
 	pGPUSetting->SetIsAutoFan(this->m_bIsAutoFan);
-	pGPUSetting->SetHasFanSpeed(this->m_bHasFanSpeed);
 	pGPUSetting->SetIsEnabled(this->m_bIsEnabled);
 	pGPUSetting->SetEngineClock(this->m_nEngineClock);
 	pGPUSetting->SetMinEngineSpeed(this->m_nMinEngineSpeed);
@@ -133,7 +132,6 @@ GPUSetting* GPUSetting::DeepCopy()
 
 	pGPUSetting->SetIsAutoEngine(this->m_bIsAutoEngine);
 	pGPUSetting->SetIsAutoFan(this->m_bIsAutoFan);
-	pGPUSetting->SetHasFanSpeed(this->m_bHasFanSpeed);
 	pGPUSetting->SetIsEnabled(this->m_bIsEnabled);
 	pGPUSetting->SetEngineClock(this->m_nEngineClock);
 	pGPUSetting->SetMinEngineSpeed(this->m_nMinEngineSpeed);

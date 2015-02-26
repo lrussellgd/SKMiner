@@ -12,13 +12,19 @@
 #define _SKSERVERCONNECTION_H_
 
 #include "ServerConnection.h"
+#include "../event/IListener.h"
+#include "../event/Event.h"
 
-class SKServerConnection : public ServerConnection
+class SKServerConnection : public ServerConnection, public IListener
 {
 
 private:
 
 	std::vector<GPUData*> m_vecGPUs;
+
+protected:
+
+	void HandleEvent(Event* pEvent);
 
 public:
 
@@ -31,7 +37,6 @@ public:
 	void ServerThread();
 
 	const std::vector<GPUData*> GetGPUs()	const { return this->m_vecGPUs; }
-
 };
 
 #endif //_SKSERVERCONNECTION_H_

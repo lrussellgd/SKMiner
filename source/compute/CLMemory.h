@@ -13,9 +13,10 @@
 
 #include <CL/cl.hpp>
 #include "../base/IPrototype.h"
+#include "../base/Entity.h"
 
 
-class CLMemory : public IPrototype
+class CLMemory : public IPrototype, public Entity
 {
 private:
 

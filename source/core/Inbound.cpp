@@ -11,89 +11,143 @@
 #include "Inbound.h"
 #include "Packet.h"
 #include "types.h"
+#include "DDOS_Filter.h"
 
 namespace LLP
 {
-	Inbound::Inbound() : PORT("13")
+	Inbound::Inbound() : Connection()
 	{
-		this->LISTENER = NULL;
-		this->ENDPOINT = NULL;
 	}
 
-	Inbound::Inbound(std::string port)
+	Inbound::Inbound(LLP::Socket_t* SOCKET_IN, LLP::DDOS_Filter* DDOS_IN) : Connection(SOCKET_IN, DDOS_IN)
 	{
-		this->LISTENER = NULL;
-		this->ENDPOINT = NULL;
 
-		this->PORT = port;
 	}
 
 	Inbound::Inbound(const Inbound& inbound)
 	{
-		this->LISTENER = inbound.GetListener();
-		this->ENDPOINT = inbound.GetEndpoint();
-		this->PORT = inbound.GetPort();
 	}
 
 	Inbound& Inbound::operator = (const Inbound& inbound)
 	{
-		this->LISTENER = inbound.GetListener();
-		this->ENDPOINT = inbound.GetEndpoint();
-		this->PORT = inbound.GetPort();
-
 		return *this;
 	}
 
 	Inbound::~Inbound()
 	{
-		if (LISTENER)
-		{
-			delete(LISTENER);
-			LISTENER = NULL;
-		}
-
-		if (ENDPOINT)
-		{ 
-			delete(ENDPOINT);
-			ENDPOINT = NULL;
-		}
 	}
 
 	void Inbound::Start()
 	{
-		if (LISTENER)
-		{
-			delete(LISTENER);
-			LISTENER = NULL;
-		}
+		m_vecReadData.clear();
+		INCOMING->SetNull();
 
-		if (ENDPOINT)
-		{
-			delete(ENDPOINT);
-			ENDPOINT = NULL;
-		}
-
-		ENDPOINT = new Endpoint_t(boost::asio::ip::tcp::v4(), atoi(this->PORT.c_str()));
-		LISTENER = new Listener_t(IO_SERVICE, *ENDPOINT, true);
-
-		this->SOCKET = new Socket_t(new boost::asio::ip::tcp::socket(LISTENER->get_io_service()));
-
-		LISTENER->async_accept(*this->SOCKET->get(), boost::bind(&Inbound::HandleAccept, this, boost::asio::placeholders::error));
+		AsyncRead();
 	}
 
-	void Inbound::HandleAccept(const boost::system::error_code& ec)
+	void Inbound::AsyncRead()
 	{
-		if (!ec)
+		if (Errors())
+			return;
+
+		if (!SOCKET)
 		{
-			//Start Read Logic
+			return;
+		}
+
+		m_vecReadData.clear();
+
+		if (SOCKET->get()->available() > 0 && INCOMING->GetHeader() == 255)
+		{
+			boost::asio::async_read(*this->SOCKET->get(),
+				boost::asio::buffer(m_vecReadData, 1),
+				boost::bind(&Inbound::HandleHeader, this,
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred));
+
+			return;
+		}
+
+		if (INCOMING->GetHeader() != 255 && !INCOMING->Complete())
+		{
+			if (SOCKET->get()->available() >= 4 && INCOMING->GetLength() == 0)
+			{
+				boost::asio::async_read(*this->SOCKET->get(),
+					boost::asio::buffer(m_vecReadData, 4),
+					boost::bind(&Inbound::HandleLength, this,
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred));
+
+				return;
+			}
+
+			unsigned int nAvailable = (unsigned int)SOCKET->get()->available();
+			if (nAvailable > 0 && INCOMING->GetLength() > 0 && INCOMING->GetData().size() < INCOMING->GetLength())
+			{
+				m_vecReadData.resize(std::min(nAvailable, (unsigned int)(INCOMING->GetLength() - INCOMING->GetData().size())));
+
+				boost::asio::async_read(*this->SOCKET->get(),
+					boost::asio::buffer(m_vecReadData, m_vecReadData.size()),
+					boost::bind(&Inbound::HandleRead, this,
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred));
+
+				return;
+			}
 		}
 	}
 
-	void Inbound::HandleWrite(const boost::system::error_code& ec, size_t numBytes)
+	void Inbound::HandleHeader(const boost::system::error_code& ec, std::size_t bytes_transferred)
 	{
-		if (!ec)
+		if (ec)
 		{
-			//Successfully Written
+			return;
+		}
+
+		if (bytes_transferred == 1)
+		{
+			INCOMING->SetHeader(m_vecReadData[0]);
+		}
+
+		AsyncRead();
+	}
+
+	void Inbound::HandleLength(const boost::system::error_code& ec, std::size_t bytes_transferred)
+	{
+		if (ec)
+		{
+			return;
+		}
+
+		if (bytes_transferred == 4)
+		{
+			INCOMING->SetLength(m_vecReadData);
+		}
+
+		AsyncRead();
+	}
+
+	void Inbound::HandleRead(const boost::system::error_code& ec, std::size_t bytes_transferred)
+	{
+		if (ec)
+		{
+			return;
+		}
+
+		if (bytes_transferred == m_vecReadData.size())
+		{
+			std::vector<unsigned char> dta = INCOMING->GetData();
+			try
+			{
+				dta.insert(dta.end(), m_vecReadData.begin(), m_vecReadData.end());
+			}
+			catch (const std::exception e)
+			{
+				return;
+			}
+			INCOMING->SetData(dta);
+
+			Event(bytes_transferred);
 		}
 	}
 }

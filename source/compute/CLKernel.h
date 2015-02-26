@@ -15,11 +15,12 @@
 #include <string>
 
 #include "../base/IPrototype.h"
+#include "../base/Entity.h"
 #include <map>
 
 class CLMemory;
 
-class CLKernel : public IPrototype
+class CLKernel : public IPrototype, public Entity
 {
 private:
 	

@@ -16,14 +16,17 @@
 #include "../data/SKMinerData.h"
 #include "../kernel/KernelFuncs.h"
 #include "../compute/CLFuncs.h"
+#include "../event/EventManager.h"
 
 SKServerConnection::SKServerConnection() : ServerConnection()
 {
-
+	this->m_enmEntityType = ENTITY_TYPE::SK_SERVER_CONNECTION;
+	this->m_bIsEnabled = true;
 }
 
 SKServerConnection::SKServerConnection(const SKServerConnection& skServerConnection) : ServerConnection(skServerConnection)
 {
+	this->m_bIsEnabled = true;
 	std::vector<GPUData*> vecGPUs = skServerConnection.GetGPUs();
 	for (size_t index = 0; index < vecGPUs.size(); ++index)
 	{
@@ -33,6 +36,8 @@ SKServerConnection::SKServerConnection(const SKServerConnection& skServerConnect
 
 SKServerConnection& SKServerConnection::operator=(const SKServerConnection& serverConnection)
 {
+	this->m_bIsEnabled = true;
+	this->m_enmEntityType = serverConnection.GetEntityType();
 	std::vector<GPUData*> vecGPUs = serverConnection.GetGPUs();
 	for (size_t index = 0; index < vecGPUs.size(); ++index)
 	{
@@ -46,13 +51,25 @@ SKServerConnection::SKServerConnection(std::vector<GPUData*> gpus, std::string i
 {
 	this->m_szIP = ip;
 	this->m_szPORT = port;
+	this->m_bIsEnabled = true;
+
+	EventManager::GetInstance()->Register(Event::EVENT_TYPE::DISABLE_GPU, this);
+	EventManager::GetInstance()->Register(Event::EVENT_TYPE::ENABLE_GPU, this);
+	EventManager::GetInstance()->Register(Event::EVENT_TYPE::SET_GPU_INTENSTY, this);
+	EventManager::GetInstance()->Register(Event::EVENT_TYPE::SET_GPU_X_INTENSTY, this);
+	EventManager::GetInstance()->Register(Event::EVENT_TYPE::SET_GPU_RAW_INTENSTY, this);
+	EventManager::GetInstance()->Register(Event::EVENT_TYPE::SET_GPU_ENGINE_CLOCK, this);
+	EventManager::GetInstance()->Register(Event::EVENT_TYPE::SET_GPU_MEMORY_CLOCK, this);
+	EventManager::GetInstance()->Register(Event::EVENT_TYPE::SET_GPU_VOLTAGE, this);
+	EventManager::GetInstance()->Register(Event::EVENT_TYPE::SET_GPU_POWERTUNE, this);
+	EventManager::GetInstance()->Register(Event::EVENT_TYPE::SET_GPU_FAN, this);
 
 	m_thTHREAD = boost::thread(&SKServerConnection::ServerThread, this);
 
 	m_nThreads = 0;
 	for (int nIndex = 0; nIndex < gpus.size(); ++nIndex)
 	{
-		if (!gpus[nIndex]->GetGPU()->GetGPUSetting()->GetIsEnabled())
+		if (!gpus[nIndex]->GetGPUSetting()->GetIsEnabled())
 		{
 			continue;
 		}
@@ -64,9 +81,10 @@ SKServerConnection::SKServerConnection(std::vector<GPUData*> gpus, std::string i
 
 		MinerThread* pThread = new SKMinerThread((SKMinerData*)pMinerData);
 		pThread->SetHashFunc(sk1024_kernel_djm2);
+
 		m_vecTHREADS.push_back(pThread);
 
-		int currThreads = gpus[nIndex]->GetGPU()->GetGPUSetting()->GetThreads();
+		int currThreads = gpus[nIndex]->GetGPUSetting()->GetThreads();
 		if (currThreads > 1)
 		{
 			for (int gpuThreads = 1; gpuThreads < currThreads; ++gpuThreads)
@@ -80,6 +98,7 @@ SKServerConnection::SKServerConnection(std::vector<GPUData*> gpus, std::string i
 
 				MinerThread* pThread = new SKMinerThread((SKMinerData*)pMinerData);
 				pThread->SetHashFunc(sk1024_kernel_djm2);
+
 				m_vecTHREADS.push_back(pThread);
 			}
 		}
@@ -93,6 +112,8 @@ SKServerConnection::SKServerConnection(std::vector<GPUData*> gpus, std::string i
 
 SKServerConnection::~SKServerConnection()
 {
+	EventManager::GetInstance()->Deregister(this);
+
 	ServerConnection::~ServerConnection();
 
 	for (size_t gpuIndex = 0; gpuIndex < m_vecGPUs.size(); ++gpuIndex)
@@ -121,8 +142,10 @@ void SKServerConnection::ServerThread()
 
 	/** Initialize a Timer for the Hash Meter. **/
 	m_tTIMER.Start();
+	m_totalTIMER.Start();
 
-	unsigned int nBestHeight = 0;
+	m_nBestHeight = 0;
+	m_nNewBlocks = 0;
 	loop
 	{
 		if (m_bIsShutDown)
@@ -134,6 +157,11 @@ void SKServerConnection::ServerThread()
 		{
 			/** Run this thread at 1 Cycle per Second. **/
 			Sleep(1000);
+
+			if (!m_bIsEnabled)
+			{
+				continue;
+			}
 
 			/** Attempt with best efforts to keep the Connection Alive. **/
 			if (!m_pCLIENT->Connected() || m_pCLIENT->Errors())
@@ -156,9 +184,11 @@ void SKServerConnection::ServerThread()
 			}
 
 			/** If there is a new block, Flag the Threads to Stop Mining. **/
-			if (nHeight != nBestHeight)
+			if (nHeight != m_nBestHeight)
 			{
-				nBestHeight = nHeight;
+				m_nBestHeight = nHeight;
+				m_nNewBlocks++;
+
 				printf("[MASTER] Coinshield Network | New Block %u\n", nHeight);
 
 				ResetThreads();
@@ -168,11 +198,12 @@ void SKServerConnection::ServerThread()
 			/** Rudimentary Meter **/
 			if (m_tTIMER.Elapsed() > 10)
 			{
-				unsigned int nElapsed = m_tTIMER.ElapsedMilliseconds();
-				unsigned int nHashes = Hashes();
-
-				double KHASH = (double)nHashes / nElapsed;
-				printf("[METERS] %u Hashes | %f KHash/s | Height = %u\n", nHashes, KHASH, nBestHeight);
+				//unsigned int nElapsed = m_tTIMER.ElapsedMilliseconds();
+				//unsigned int nHashes = Hashes();
+				double KHASH = Hashes();
+				
+				//double KHASH = (double)nHashes / nElapsed;
+				printf("[METERS] %f KHash/s | Height = %u\n", KHASH, m_nBestHeight);
 
 				m_tTIMER.Reset();
 			}
@@ -186,7 +217,7 @@ void SKServerConnection::ServerThread()
 					break;
 				}
 
-				if (!m_vecTHREADS[nIndex]->GetMinerData()->GetGPUData()->GetGPU()->GetGPUSetting()->GetIsEnabled())
+				if (!m_vecTHREADS[nIndex]->GetMinerData()->GetGPUData()->GetGPUSetting()->GetIsEnabled())
 				{
 					continue;
 				}				
@@ -195,7 +226,7 @@ void SKServerConnection::ServerThread()
 				if (m_vecTHREADS[nIndex]->GetIsNewBlock())
 				{
 					/** Delete the Block Pointer if it Exists. **/
-					 Core::CBlock* pBlock = m_vecTHREADS[nIndex]->GetMinerData()->GetBlock();
+					Core::CBlock* pBlock = m_vecTHREADS[nIndex]->GetMinerData()->GetBlock();
 					if (pBlock != NULL)
 					{
 						delete(pBlock);
@@ -203,10 +234,11 @@ void SKServerConnection::ServerThread()
 					}
 
 					/** Retrieve new block from Server. **/
+					m_pCLIENT->SetChannel(2);
 					pBlock = m_pCLIENT->GetBlock(5);
 
 					/** If the block is good, tell the Mining Thread its okay to Mine. **/
-					if (pBlock)
+					if (pBlock && pBlock->GetChannel() == 2)
 					{
 						m_vecTHREADS[nIndex]->SetIsNewBlock(false);
 						m_vecTHREADS[nIndex]->SetIsBlockFound(false);
@@ -234,11 +266,14 @@ void SKServerConnection::ServerThread()
 					if (RESPONSE == 200)
 					{
 						printf("[MASTER] Block Accepted By Coinshield Network.\n");
+
+						m_vecTHREADS[nIndex]->SetBlocksFound(m_vecTHREADS[nIndex]->GetBlocksFound() + 1);
 					}
 					else if (RESPONSE == 201)
 					{
 						printf("[MASTER] Block Rejected by Coinshield Network.\n");
 
+						m_vecTHREADS[nIndex]->SetRejected(m_vecTHREADS[nIndex]->GetRejected() + 1);
 						m_vecTHREADS[nIndex]->SetIsNewBlock(true);
 						m_vecTHREADS[nIndex]->SetIsBlockFound(false);
 					}
@@ -269,5 +304,145 @@ void SKServerConnection::ServerThread()
 		}
 
 		m_bDidShutDown = true;
+	}
+}
+
+void SKServerConnection::HandleEvent(Event* pEvent)
+{
+	if (!pEvent)
+	{
+		return;
+	}
+
+	switch (pEvent->GetEventType())
+	{
+		case Event::EVENT_TYPE::DISABLE_GPU:
+		{
+			int nGPUID = pEvent->GetParam<int>(0);
+			if (m_vecTHREADS.size() >= nGPUID)
+			{
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetIsEnabled(false);
+			}
+
+		}
+		break;
+		case Event::EVENT_TYPE::ENABLE_GPU:
+		{
+			int nGPUID = pEvent->GetParam<int>(0);
+			if (m_vecTHREADS.size() >= nGPUID)
+			{
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetIsEnabled(true);
+			}
+		}
+		break;
+		case Event::EVENT_TYPE::SET_GPU_INTENSTY:
+		{
+			int nGPUID = pEvent->GetParam<int>(0);
+			int nIntensity = pEvent->GetParam<int>(1);
+
+			if (m_vecTHREADS.size() >= nGPUID)
+			{
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetIntensity(nIntensity);
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetXIntensity(0);
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetRawIntensity(0);
+				
+			}
+		}
+		break;
+		case Event::EVENT_TYPE::SET_GPU_X_INTENSTY:
+		{
+			int nGPUID = pEvent->GetParam<int>(0);
+			int nXIntensity = pEvent->GetParam<int>(1);
+
+			if (m_vecTHREADS.size() >= nGPUID)
+			{
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetIntensity(0);
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetXIntensity(nXIntensity);
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetRawIntensity(0);		
+			}
+		}
+		break;
+		case Event::EVENT_TYPE::SET_GPU_RAW_INTENSTY:
+		{
+			int nGPUID = pEvent->GetParam<int>(0);
+			int nRawIntensity = pEvent->GetParam<int>(1);
+
+			if (m_vecTHREADS.size() >= nGPUID)
+			{
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetIntensity(0);
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetXIntensity(0);
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetRawIntensity(nRawIntensity);
+			}
+		}
+		break;
+		case Event::EVENT_TYPE::SET_GPU_ENGINE_CLOCK:
+		{
+			int nGPUID = pEvent->GetParam<int>(0);
+			int nEngineClock = pEvent->GetParam<int>(1);
+
+			if (m_vecTHREADS.size() >= nGPUID)
+			{
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetEngineClock(nEngineClock);
+				int nAdapterIndex = m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetAdapterIndex();
+
+				EventManager::GetInstance()->AddEvent(Event::EVENT_TYPE::SET_ADL_GPU_ENGINE_CLOCK, ToVoid<int>(nAdapterIndex), ToVoid<int>(nEngineClock));
+			}
+		}
+		break;
+		case Event::EVENT_TYPE::SET_GPU_MEMORY_CLOCK:
+		{
+			int nGPUID = pEvent->GetParam<int>(0);
+			int nMemoryClock = pEvent->GetParam<int>(1);
+
+			if (m_vecTHREADS.size() >= nGPUID)
+			{
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetMemclock(nMemoryClock);
+				int nAdapterIndex = m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetAdapterIndex();
+
+				EventManager::GetInstance()->AddEvent(Event::EVENT_TYPE::SET_ADL_GPU_MEMORY_CLOCK, ToVoid<int>(nAdapterIndex), ToVoid<int>(nMemoryClock));
+			}
+		}
+		break;
+		case Event::EVENT_TYPE::SET_GPU_VOLTAGE:
+		{
+			int nGPUID = pEvent->GetParam<int>(0);
+			int nVoltage = pEvent->GetParam<int>(1);
+
+			if (m_vecTHREADS.size() >= nGPUID)
+			{
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetVoltage(nVoltage);
+				int nAdapterIndex = m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetAdapterIndex();
+
+				EventManager::GetInstance()->AddEvent(Event::EVENT_TYPE::SET_ADL_GPU_VOLTAGE, ToVoid<int>(nAdapterIndex), ToVoid<int>(nVoltage));
+			}
+		}
+		break;
+		case Event::EVENT_TYPE::SET_GPU_POWERTUNE:
+		{
+			int nGPUID = pEvent->GetParam<int>(0);
+			int nPowertune = pEvent->GetParam<int>(1);
+
+			if (m_vecTHREADS.size() >= nGPUID)
+			{
+				m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetGPUSetting()->SetPowerTune(nPowertune);
+				int nAdapterIndex = m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetAdapterIndex();
+
+				EventManager::GetInstance()->AddEvent(Event::EVENT_TYPE::SET_ADL_GPU_POWERTUNE, ToVoid<int>(nAdapterIndex), ToVoid<int>(nPowertune));
+			}
+		}
+		break;
+		case Event::EVENT_TYPE::SET_GPU_FAN:
+		{
+			int nGPUID = pEvent->GetParam<int>(0);
+			float fFanSpeed = pEvent->GetParam<float>(1);
+
+			if (m_vecTHREADS.size() >= nGPUID)
+			{
+				int nAdapterIndex = m_vecTHREADS[nGPUID]->GetMinerData()->GetGPUData()->GetAdapterIndex();
+
+				EventManager::GetInstance()->AddEvent(Event::EVENT_TYPE::SET_ADL_GPU_FAN, ToVoid<int>(nAdapterIndex), ToVoid<float>(fFanSpeed));
+			}
+		}
+		break;
 	}
 }

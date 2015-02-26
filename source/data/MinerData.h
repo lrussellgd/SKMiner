@@ -14,6 +14,7 @@
 #include <string>
 
 #include "../base/IPrototype.h"
+#include "../base/Entity.h"
 
 namespace Core
 {
@@ -22,7 +23,7 @@ namespace Core
 
 class GPUData;
 
-class MinerData : public IPrototype
+class MinerData : public IPrototype, public Entity
 {
 
 protected:

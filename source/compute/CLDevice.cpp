@@ -11,12 +11,15 @@
 #include "CLDevice.h"
 #include "CLKernel.h"
 
+#include <iostream>
+#include <fstream>
 
 ///////////////////////////////////////////////////////////////////////////////
 //Constructor
 ///////////////////////////////////////////////////////////////////////////////
 CLDevice::CLDevice() : BaseComputeDevice()
 {
+	this->m_enmEntityType = ENTITY_TYPE::COMPUTE_DEVICE_CL;
 	this->m_unIsEndianLittle = this->m_unAddressBits = this->m_unMaxClockFrequency = this->m_unPreferredVectorWidth = 0;
 	this->m_ullMemorySize = this->m_ullDeviceGlobalMemSize = 0;
 	this->m_stComputeShaders = this->m_stMaxWorkGroupSize = 0;
@@ -27,6 +30,8 @@ CLDevice::CLDevice() : BaseComputeDevice()
 ///////////////////////////////////////////////////////////////////////////////
 CLDevice::CLDevice(cl::Device device)
 {
+	this->m_enmEntityType = ENTITY_TYPE::COMPUTE_DEVICE_CL;
+
 	this->m_clDevice = device;
 
 	this->m_szName = m_clDevice.getInfo<CL_DEVICE_NAME>();
@@ -70,13 +75,27 @@ CLDevice::CLDevice(cl::Device device)
 	m_clDevice.getInfo(CL_DEVICE_MAX_MEM_ALLOC_SIZE, &maxMemSize);
 	m_ullMemorySize = maxMemSize;
 
+	m_bHasKHRfp64 = false;
+	m_bHasAMDfp64 = false;
+
+	std::string devExtensions = m_clDevice.getInfo<CL_DEVICE_EXTENSIONS>();
+	if (devExtensions.find("cl_amd_fp64") != std::string::npos)
+	{
+		m_bHasAMDfp64 = true;
+	}
+
+	if (devExtensions.find("cl_khr_fp64") != std::string::npos)
+	{
+		m_bHasKHRfp64 = true;
+	}
+
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //Copy Constructor
 ///////////////////////////////////////////////////////////////////////////////
-CLDevice::CLDevice(const CLDevice& device) : BaseComputeDevice()
+CLDevice::CLDevice(const CLDevice& device) : BaseComputeDevice(device)
 {
 	this->m_clDevice = device.GetDeviceID();
 	this->m_szName = device.GetName().c_str();
@@ -97,6 +116,7 @@ CLDevice::CLDevice(const CLDevice& device) : BaseComputeDevice()
 ///////////////////////////////////////////////////////////////////////////////
 CLDevice& CLDevice::operator = (const CLDevice& device)
 {
+	this->m_enmEntityType = device.GetEntityType();
 	this->m_clDevice = device.GetDeviceID();
 	this->m_szName = device.GetName().c_str();
 	this->m_szVendorName = device.GetVendorName().c_str();

@@ -15,6 +15,7 @@
 
 SKMinerData::SKMinerData() : MinerData()
 {
+	this->m_enmEntityType = ENTITY_TYPE::SK_MINER_DATA;
 	this->m_pTarget = NULL;
 }
 
@@ -25,6 +26,7 @@ SKMinerData::SKMinerData(const SKMinerData& minerData) : MinerData(minerData)
 
 SKMinerData& SKMinerData::operator=(const SKMinerData& minerData)
 {
+	this->m_enmEntityType = minerData.GetEntityType();
 	this->SetGPUData(minerData.GetGPUData());
 	this->SetBlock(minerData.GetBlock());
 	this->SetTarget(minerData.GetTarget());

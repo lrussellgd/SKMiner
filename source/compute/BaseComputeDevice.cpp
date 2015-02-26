@@ -15,13 +15,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 BaseComputeDevice::BaseComputeDevice()
 {
+	this->m_enmEntityType = ENTITY_TYPE::BASE_COMPUTE_DEVICE;
 	m_unVendorID = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //Copy Constructor
 ///////////////////////////////////////////////////////////////////////////////
-BaseComputeDevice::BaseComputeDevice(const BaseComputeDevice& device)
+BaseComputeDevice::BaseComputeDevice(const BaseComputeDevice& device) : Entity(device)
 {
 	this->m_szAlgorithm = device.GetAlgorithm();
 	this->m_unVendorID = device.GetVendorID();
@@ -34,6 +35,7 @@ BaseComputeDevice::BaseComputeDevice(const BaseComputeDevice& device)
 ///////////////////////////////////////////////////////////////////////////////
 BaseComputeDevice& BaseComputeDevice::operator=(const BaseComputeDevice& device)
 {
+	this->m_enmEntityType = device.GetEntityType();
 	this->m_szAlgorithm = device.GetAlgorithm();
 	this->m_unVendorID = device.GetVendorID();
 	this->m_szVendorName = device.GetVendorName();

@@ -15,13 +15,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 ConfigConnection::ConfigConnection()
 {
-
+	this->m_enmEntityType = ENTITY_TYPE::CONFIG_CONNECTION;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //Copy Constructor
 ///////////////////////////////////////////////////////////////////////////////
-ConfigConnection::ConfigConnection(const ConfigConnection& conn)
+ConfigConnection::ConfigConnection(const ConfigConnection& conn) : Entity(conn)
 {
 	this->m_szURL = conn.GetURL();
 	this->m_szUser = conn.GetUser();
@@ -31,6 +31,7 @@ ConfigConnection::ConfigConnection(const ConfigConnection& conn)
 
 ConfigConnection& ConfigConnection::operator=(const ConfigConnection& conn)
 {
+	this->m_enmEntityType = conn.GetEntityType();
 	this->m_szURL = conn.GetURL();
 	this->m_szUser = conn.GetUser();
 	this->m_szPassword = conn.GetPassword();

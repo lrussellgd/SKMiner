@@ -13,16 +13,17 @@
 #include "../kernel/KernelFuncs.h"
 #include "../gpu/BaseGPU.h"
 #include "../core/util.h"
+#include "../core/bignum.h"
 #include "../data/MinerData.h"
 #include "../data/SKMinerData.h"
-#include "../core/bignum.h"
 #include "../compute/CLDevice.h"
 #include "../compute/CLKernel.h"
 #include "../compute/CLMemory.h"
 
 SKMinerThread::SKMinerThread() : MinerThread()
 {
-
+	this->m_enmEntityType = ENTITY_TYPE::SK_MINER_THREAD;
+	m_pTHREAD = new boost::thread(&SKMinerThread::Miner, this);
 }
 
 SKMinerThread::SKMinerThread(SKMinerData* pData) : MinerThread(pData)
@@ -45,6 +46,7 @@ SKMinerThread::SKMinerThread(const SKMinerThread& miner) : MinerThread(miner)
 
 SKMinerThread& SKMinerThread::operator=(const SKMinerThread& miner)
 {
+	m_enmEntityType = miner.GetEntityType();
 	m_pMinerData = miner.GetMinerData();
 	m_bBlockFound = miner.GetIsBlockFound();
 	m_bNewBlock = miner.GetIsNewBlock();
@@ -151,20 +153,26 @@ void SKMinerThread::Miner()
 				}
 				Unlock();
 			
+				total_mhashes_done += m_pMinerData->GetGPUData()->GetHashes();
 				m_unHashes += m_pMinerData->GetGPUData()->GetHashes();				
+
+				if (m_pMinerData->GetBlock()->GetNonce() >= MAX_THREADS)
+				{
+					if (bIsFound)
+					{
+						//Hardware Error
+						m_pMinerData->GetGPUData()->SetHardwareErrors(m_pMinerData->GetGPUData()->GetHardwareErrors() + 1);
+					}
+
+					m_bNewBlock = true;
+					break;
+				}
 
 				if (bIsFound)
 				{
 					m_bBlockFound = true;
 					break;
 				}
-
-				if (m_pMinerData->GetBlock()->GetNonce() >= MAX_THREADS)
-				{
-					m_bNewBlock = true;
-					break;
-				}		
-
 			}
 
 			if (m_bShutown)
@@ -176,7 +184,7 @@ void SKMinerThread::Miner()
 		}
 		catch (std::exception& e)
 		{
-			printf("ERROR: %s\n", e.what());
+			std::cout << "ERROR: " << e.what() << std::endl;
 		}
 	}
 }

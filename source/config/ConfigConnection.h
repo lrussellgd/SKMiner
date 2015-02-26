@@ -13,8 +13,9 @@
 
 #include <string>
 #include "../base/IPrototype.h"
+#include "../base/Entity.h"
 
-class ConfigConnection : public IPrototype
+class ConfigConnection : public IPrototype, public Entity
 {
 
 private:

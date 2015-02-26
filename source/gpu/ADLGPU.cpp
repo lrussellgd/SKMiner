@@ -18,7 +18,30 @@
 ///////////////////////////////////////////////////////////////////////////////
 ADLGPU::ADLGPU() : BaseGPU()
 {
-	m_nLPAdapterID = 0;
+	this->m_enmEntityType = ENTITY_TYPE::ADL_GPU;
+
+	this->m_bIsAutoFan = false;
+	this->m_bHasFanSpeed = false;
+
+	this->m_nOverdriveSupported = 0;
+	this->m_nOverdriveEnabled = 0;
+	this->m_nOverdriveVersion = 0;
+
+	this->m_nFanSpeedMethod = -1;
+	this->m_nPowerControlSupported = -1;
+	this->m_nPowerControlCurrent = -1;
+	this->m_nPowerControlDefault = -1;
+	this->m_nTempTarget = 0;
+	this->m_nTempOverHeat = 0;
+	this->m_nTempCutOff = 0;
+
+	this->m_nDefaultFanSpeed = 0;
+	this->m_nDefaultEngineClock = 0;
+	this->m_nDefaultMemoryClock = 0;
+	this->m_nDefaultPowertune = 0;
+	this->m_nThermalControllerIndex = 0;
+	this->m_fDefaultVoltage = 0.0f;
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,44 +49,68 @@ ADLGPU::ADLGPU() : BaseGPU()
 ///////////////////////////////////////////////////////////////////////////////
 ADLGPU::ADLGPU(const ADLGPU& adlGPU) : BaseGPU(adlGPU)
 {
-	this->m_lpTemperature = adlGPU.GetADLTemperature();
-	this->m_lpActivity = adlGPU.GetADLPMActivity();
-	this->m_lpOdParameters = adlGPU.GetADLODParameters();
+	this->m_nOverdriveSupported = adlGPU.GetOverdriveSupported();
+	this->m_nOverdriveEnabled = adlGPU.GetOverdriveEnabled();
+	this->m_nOverdriveVersion = adlGPU.GetOverdriveVersion();
+	this->m_nFanSpeedMethod = adlGPU.GetFanSpeedMethod();
+	this->m_nPowerControlSupported = adlGPU.GetPowerControlSupported();
+	this->m_nPowerControlCurrent = adlGPU.GetPowerControlCurrent();
+	this->m_nPowerControlDefault = adlGPU.GetPowerControlDefault();
 
-	int level = this->m_lpOdParameters.iNumberOfPerformanceLevels - 1;
-	size_t perfLevelSize = sizeof(ADLODPerformanceLevels)+level * sizeof(ADLODPerformanceLevel);
-	this->m_pDefPerfLev = (ADLODPerformanceLevels *)malloc(perfLevelSize);
-	this->m_pDefPerfLev->iSize = (int)perfLevelSize;
-	memcpy(this->m_pDefPerfLev, adlGPU.GetADLODPerformanceLevels(), perfLevelSize);
+	this->m_bIsAutoFan = adlGPU.GetIsAutoFan();
+	this->m_bHasFanSpeed = adlGPU.GetHasFanSpeed();
+	this->m_nBusNumber = adlGPU.GetBusNumber();
+	this->m_nTempTarget = adlGPU.GetTempTarget();
+	this->m_nTempOverHeat = adlGPU.GetTempOverHeat();
+	this->m_nTempCutOff = adlGPU.GetTempCutOff();
+	this->m_nDefaultFanSpeed = adlGPU.GetDefaultFanSpeed();
+	this->m_nDefaultEngineClock = adlGPU.GetDefaultEngineClock();
+	this->m_nDefaultMemoryClock = adlGPU.GetDefaultMemoryClock();
+	this->m_nDefaultPowertune = adlGPU.GetDefaultPowertune();
+	this->m_nThermalControllerIndex = adlGPU.GetThermalControllerIndex();
+	this->m_fDefaultVoltage = adlGPU.GetDefaultVoltage();
 
-	this->m_lpFanSpeedInfo = adlGPU.GetADLFanSpeedInfo();
-	this->m_lpFanSpeedValue = adlGPU.GetADLFanSpeedValue();
-	this->m_lpDefFanSpeedValue = adlGPU.GetADLDefFanSpeedValue();
-	this->m_nLPAdapterID = adlGPU.GetLPAdapterID();
+	this->m_szAdapterName = adlGPU.GetAdapterName();
+	this->m_szDisplayName = adlGPU.GetDisplayName();
+	this->m_szPNPString = adlGPU.GetPNPString();
+	this->m_szUDID = adlGPU.GetUDID();
+	this->m_szPCIDeviceID = adlGPU.GetPCIDeviceID();
+	this->m_szSubSystemID = adlGPU.GetSubSystemID();
+	this->m_szSubSystemVendorID = adlGPU.GetSubSystemVendorID();
 }
 
 
 ADLGPU& ADLGPU::operator=(const ADLGPU& adlGPU)
 {
-	this->m_lpTemperature = adlGPU.GetADLTemperature();
-	this->m_lpActivity = adlGPU.GetADLPMActivity();
-	this->m_lpOdParameters = adlGPU.GetADLODParameters();
-	if(this->m_pDefPerfLev != NULL)
-	{
-		free(this->m_pDefPerfLev);
-		this->m_pDefPerfLev = NULL;
-	}
+	this->m_enmEntityType = adlGPU.GetEntityType();
+	this->m_nOverdriveSupported = adlGPU.GetOverdriveSupported();
+	this->m_nOverdriveEnabled = adlGPU.GetOverdriveEnabled();
+	this->m_nOverdriveVersion = adlGPU.GetOverdriveVersion();
+	this->m_nFanSpeedMethod = adlGPU.GetFanSpeedMethod();
+	this->m_nPowerControlSupported = adlGPU.GetPowerControlSupported();
+	this->m_nPowerControlCurrent = adlGPU.GetPowerControlCurrent();
+	this->m_nPowerControlDefault = adlGPU.GetPowerControlDefault();
 
-	int level = this->m_lpOdParameters.iNumberOfPerformanceLevels - 1;
-	size_t perfLevelSize = sizeof(ADLODPerformanceLevels) + level * sizeof(ADLODPerformanceLevel);
-	this->m_pDefPerfLev = (ADLODPerformanceLevels *)malloc(perfLevelSize);
-	this->m_pDefPerfLev->iSize = (int)perfLevelSize;
-	memcpy(this->m_pDefPerfLev, adlGPU.GetADLODPerformanceLevels(), perfLevelSize);
+	this->m_bIsAutoFan = adlGPU.GetIsAutoFan();
+	this->m_bHasFanSpeed = adlGPU.GetHasFanSpeed();
+	this->m_nBusNumber = adlGPU.GetBusNumber();
+	this->m_nTempTarget = adlGPU.GetTempTarget();
+	this->m_nTempOverHeat = adlGPU.GetTempOverHeat();
+	this->m_nTempCutOff = adlGPU.GetTempCutOff();
+	this->m_nDefaultFanSpeed = adlGPU.GetDefaultFanSpeed();
+	this->m_nDefaultEngineClock = adlGPU.GetDefaultEngineClock();
+	this->m_nDefaultMemoryClock = adlGPU.GetDefaultMemoryClock();
+	this->m_nDefaultPowertune = adlGPU.GetDefaultPowertune();
+	this->m_nThermalControllerIndex = adlGPU.GetThermalControllerIndex();
+	this->m_fDefaultVoltage = adlGPU.GetDefaultVoltage();
 
-	this->m_lpFanSpeedInfo = adlGPU.GetADLFanSpeedInfo();
-	this->m_lpFanSpeedValue = adlGPU.GetADLFanSpeedValue();
-	this->m_lpDefFanSpeedValue = adlGPU.GetADLDefFanSpeedValue();
-	this->m_nLPAdapterID = adlGPU.GetLPAdapterID();
+	this->m_szAdapterName = adlGPU.GetAdapterName();
+	this->m_szDisplayName = adlGPU.GetDisplayName();
+	this->m_szPNPString = adlGPU.GetPNPString();
+	this->m_szUDID = adlGPU.GetUDID();
+	this->m_szPCIDeviceID = adlGPU.GetPCIDeviceID();
+	this->m_szSubSystemID = adlGPU.GetSubSystemID();
+	this->m_szSubSystemVendorID = adlGPU.GetSubSystemVendorID();
 
 	return *this;
 }
@@ -73,45 +120,46 @@ ADLGPU& ADLGPU::operator=(const ADLGPU& adlGPU)
 ///////////////////////////////////////////////////////////////////////////////
 ADLGPU::~ADLGPU()
 {
-	if (this->m_pGPUSettings)
-	{
-		delete(this->m_pGPUSettings);
-		this->m_pGPUSettings = NULL;
-	}
-
-	if(this->m_pDefPerfLev != NULL)
-	{
-		free(this->m_pDefPerfLev);
-		this->m_pDefPerfLev = NULL;
-	}
 }
 
 
 ADLGPU* ADLGPU::Clone()
 {
 	ADLGPU* pADLGPU = new ADLGPU();
-
-
-	pADLGPU->SetAdapterIndex(this->m_nAdapterIndex);
-	pADLGPU->SetAdapterName(this->m_szAdapterName);
-	pADLGPU->SetBusNumber(this->m_nBusNumber);
+	
 	pADLGPU->SetGPUID(this->m_nGPUID);
-	pADLGPU->SetGPUSetting(this->m_pGPUSettings);
-	pADLGPU->SetIsDefFanValid(this->m_bIsDefFanValid);
-	pADLGPU->SetIsFanValid(this->m_bIsFanValid);
 	pADLGPU->SetIsManaged(this->m_bIsManaged);
-	pADLGPU->SetLastEngine(this->m_nLastEngine);
-	pADLGPU->SetLastTemp(this->m_nLastTemp);
 	pADLGPU->SetTwin(this->m_pTwin);
 
-	pADLGPU->SetADLTemperature(this->m_lpTemperature);
-	pADLGPU->SetADLPMActivity(this->m_lpActivity);
-	pADLGPU->SetADLODParameters(this->m_lpOdParameters);
-	pADLGPU->SetADLODPerformanceLevels(this->m_pDefPerfLev);
-	pADLGPU->SetADLFanSpeedInfo(this->m_lpFanSpeedInfo);
-	pADLGPU->SetADLFanSpeedValue(this->m_lpFanSpeedValue);
-	pADLGPU->SetADLDefFanSpeedValue(this->m_lpDefFanSpeedValue);
-	pADLGPU->SetLPAdapterID(this->m_nLPAdapterID);
+
+	pADLGPU->SetIsAutoFan(this->m_bIsAutoFan);
+	pADLGPU->SetHasFanSpeed(this->m_bHasFanSpeed);
+	pADLGPU->SetOverdriveSupported(this->m_nOverdriveSupported);
+	pADLGPU->SetOverdriveEnabled(this->m_nOverdriveEnabled);
+	pADLGPU->SetOverdriveVersion(this->m_nOverdriveVersion);
+	pADLGPU->SetFanSpeedMethod(this->m_nFanSpeedMethod);
+	pADLGPU->SetPowerControlSupported(this->m_nPowerControlSupported);
+	pADLGPU->SetPowerControlCurrent(this->m_nPowerControlCurrent);
+	pADLGPU->SetPowerControlDefault(this->m_nPowerControlDefault);
+
+	pADLGPU->SetBusNumber(this->m_nBusNumber);
+	pADLGPU->SetTempTarget(this->m_nTempTarget);
+	pADLGPU->SetTempOverHeat(this->m_nTempOverHeat);
+	pADLGPU->SetTempCutOff(this->m_nTempCutOff);
+	pADLGPU->SetDefaultFanSpeed(this->m_nDefaultFanSpeed);
+	pADLGPU->SetDefaultEngineClock(this->m_nDefaultEngineClock);
+	pADLGPU->SetDefaultMemoryClock(this->m_nDefaultMemoryClock);
+	pADLGPU->SetDefaultPowertune(this->m_nDefaultPowertune);
+	pADLGPU->SetThermalControllerIndex(this->m_nThermalControllerIndex);
+	pADLGPU->SetDefaultVoltage(this->m_fDefaultVoltage);
+
+	pADLGPU->SetAdapterName(this->m_szAdapterName);
+	pADLGPU->SetDisplayName(this->m_szDisplayName);
+	pADLGPU->SetPNPString(this->m_szPNPString);
+	pADLGPU->SetUDID(this->m_szUDID);
+	pADLGPU->SetPCIDeviceID(this->m_szPCIDeviceID);
+	pADLGPU->SetSubSystemID(this->m_szSubSystemID);
+	pADLGPU->SetSubSystemVendorID(this->m_szSubSystemVendorID);
 
 	return pADLGPU;
 }
@@ -120,39 +168,38 @@ ADLGPU* ADLGPU::DeepCopy()
 {
 	ADLGPU* pADLGPU = new ADLGPU();
 
-	pADLGPU->SetAdapterIndex(this->m_nAdapterIndex);
-	pADLGPU->SetAdapterName(this->m_szAdapterName);
-	pADLGPU->SetBusNumber(this->m_nBusNumber);
 	pADLGPU->SetGPUID(this->m_nGPUID);
-	pADLGPU->SetGPUSetting(this->m_pGPUSettings->DeepCopy());
-	pADLGPU->SetIsDefFanValid(this->m_bIsDefFanValid);
-	pADLGPU->SetIsFanValid(this->m_bIsFanValid);
 	pADLGPU->SetIsManaged(this->m_bIsManaged);
-	pADLGPU->SetLastEngine(this->m_nLastEngine);
-	pADLGPU->SetLastTemp(this->m_nLastTemp);
+	pADLGPU->SetTwin(this->m_pTwin);
 
-	if (this->m_pTwin)
-	{
-		pADLGPU->SetTwin(this->m_pTwin);
-	}
-	
-	pADLGPU->SetADLTemperature(this->m_lpTemperature);
-	pADLGPU->SetADLPMActivity(this->m_lpActivity);
-	pADLGPU->SetADLODParameters(this->m_lpOdParameters);
+	pADLGPU->SetIsAutoFan(this->m_bIsAutoFan);
+	pADLGPU->SetHasFanSpeed(this->m_bHasFanSpeed);
+	pADLGPU->SetFanSpeedMethod(this->m_nFanSpeedMethod);
+	pADLGPU->SetOverdriveSupported(this->m_nOverdriveSupported);
+	pADLGPU->SetOverdriveEnabled(this->m_nOverdriveEnabled);
+	pADLGPU->SetOverdriveVersion(this->m_nOverdriveVersion);
+	pADLGPU->SetPowerControlSupported(this->m_nPowerControlSupported);
+	pADLGPU->SetPowerControlCurrent(this->m_nPowerControlCurrent);
+	pADLGPU->SetPowerControlDefault(this->m_nPowerControlDefault);
 
-	int level = this->m_lpOdParameters.iNumberOfPerformanceLevels - 1;
-	size_t perfLevelSize = sizeof(ADLODPerformanceLevels)+level * sizeof(ADLODPerformanceLevel);
+	pADLGPU->SetBusNumber(this->m_nBusNumber);
+	pADLGPU->SetTempTarget(this->m_nTempTarget);
+	pADLGPU->SetTempOverHeat(this->m_nTempOverHeat);
+	pADLGPU->SetTempCutOff(this->m_nTempCutOff);
+	pADLGPU->SetDefaultFanSpeed(this->m_nDefaultFanSpeed);
+	pADLGPU->SetDefaultEngineClock(this->m_nDefaultEngineClock);
+	pADLGPU->SetDefaultMemoryClock(this->m_nDefaultMemoryClock);
+	pADLGPU->SetDefaultPowertune(this->m_nDefaultPowertune);
+	pADLGPU->SetThermalControllerIndex(this->m_nThermalControllerIndex);
+	pADLGPU->SetDefaultVoltage(this->m_fDefaultVoltage);
 
-	ADLODPerformanceLevels* pDefPerfLev = (ADLODPerformanceLevels *)malloc(perfLevelSize);
-	pDefPerfLev->iSize = (int)perfLevelSize;
-	memcpy(pDefPerfLev, this->m_pDefPerfLev, perfLevelSize);
-
-	pADLGPU->SetADLODPerformanceLevels(pDefPerfLev);
-
-	pADLGPU->SetADLFanSpeedInfo(this->m_lpFanSpeedInfo);
-	pADLGPU->SetADLFanSpeedValue(this->m_lpFanSpeedValue);
-	pADLGPU->SetADLDefFanSpeedValue(this->m_lpDefFanSpeedValue);
-	pADLGPU->SetLPAdapterID(this->m_nLPAdapterID);
+	pADLGPU->SetAdapterName(this->m_szAdapterName);
+	pADLGPU->SetDisplayName(this->m_szDisplayName);
+	pADLGPU->SetPNPString(this->m_szPNPString);
+	pADLGPU->SetUDID(this->m_szUDID);
+	pADLGPU->SetPCIDeviceID(this->m_szPCIDeviceID);
+	pADLGPU->SetSubSystemID(this->m_szSubSystemID);
+	pADLGPU->SetSubSystemVendorID(this->m_szSubSystemVendorID);
 
 	return pADLGPU;
 }

@@ -14,37 +14,20 @@
 #ifndef COINSHIELD_UTIL_H
 #define COINSHIELD_UTIL_H
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include "../hash/uint1024.h"
+#include "../base/OSVersion.h"
 
-typedef int pid_t; /* define for windows compatiblity */
-
-
-#include <string>
-#include <vector>
-#include <stdio.h>
-#include <istream>
-#include <ostream>
-#include <cstdio>
-
-#include <cstdlib>
-#include <iostream>
 #include <boost/bind.hpp>
+#include <boost/function.hpp>
+#include <boost/assign.hpp>
 #include <boost/asio.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/thread.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #define loop                for(;;)
 #define BEGIN(a)            ((char*)&(a))
 #define END(a)              ((char*)&((&(a))[1]))
 #define Sleep(a)            boost::this_thread::sleep(boost::posix_time::milliseconds(a));
-#define minNum(a,b)            (((a) < (b)) ? (a) : (b))
-
-#ifdef WIN32      
-#define WIN32_LEAN_AND_MEAN 
-#define NOMINMAX
-#endif
-
-#define MAX_THREADS 18446744073709551615
+#define minNum(a,b)         (((a) < (b)) ? (a) : (b))
 
 #endif

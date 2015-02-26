@@ -13,8 +13,9 @@
 
 #include <string>
 #include "../base/IPrototype.h"
+#include "../base/Entity.h"
 
-class BaseComputeDevice : public IPrototype
+class BaseComputeDevice : public IPrototype, public Entity
 {
 
 protected:

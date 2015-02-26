@@ -7,7 +7,6 @@
 //
 // License:	GNU GENERAL PUBLIC LICENSE V3
 //////////////////////////////////////////////
-//#include <vld.h>
 
 #include "Application.h"
 
@@ -71,6 +70,8 @@ int main(int argc, char *argv[])
 	std::string key;
 	std::cin >> key;
 
+	std::cout << "Key Received: " << key << std::endl;
+
 	myApp->Shutdown();
 
 	delete(myApp);
@@ -79,6 +80,8 @@ int main(int argc, char *argv[])
 
 void Exit()
 {
+	std::cout << "Exit Called" << std::endl;
+
 	if (myApp)
 	{
 		myApp->Shutdown();

@@ -15,11 +15,12 @@
 
 MinerData::MinerData()
 {
+	this->m_enmEntityType = ENTITY_TYPE::MINER_DATA;
 	this->m_pBLOCK = NULL;
 	this->m_pGPUData = NULL;
 }
 
-MinerData::MinerData(const MinerData& minerData)
+MinerData::MinerData(const MinerData& minerData) : Entity(minerData)
 {
 	this->m_pBLOCK = minerData.GetBlock();
 	this->m_pGPUData = minerData.GetGPUData();
@@ -27,6 +28,7 @@ MinerData::MinerData(const MinerData& minerData)
 
 MinerData& MinerData::operator=(const MinerData& minerData)
 {
+	this->m_enmEntityType = minerData.GetEntityType();
 	this->m_pBLOCK = minerData.GetBlock();
 	this->m_pGPUData = minerData.GetGPUData();
 

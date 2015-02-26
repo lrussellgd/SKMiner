@@ -18,28 +18,19 @@
 ///////////////////////////////////////////////////////////////////////////////
 BaseGPU::BaseGPU()
 {
-	this->m_bIsDefFanValid = this->m_bIsFanValid = this->m_bIsManaged = false;
-	this->m_nGPUID = this->m_nAdapterIndex = this->m_nBusNumber = 0;
-	this->m_nLastEngine = this->m_nLastTemp = 0;
+	this->m_enmEntityType = ENTITY_TYPE::BASE_GPU;
+	this->m_bIsManaged = false;
+	this->m_nGPUID = 0;
 	this->m_pTwin = NULL;
-	this->m_pGPUSettings = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //Copy Constructor
 ///////////////////////////////////////////////////////////////////////////////
-BaseGPU::BaseGPU(const BaseGPU& baseGPU)
+BaseGPU::BaseGPU(const BaseGPU& baseGPU) : Entity(baseGPU)
 {
-	this->m_bIsDefFanValid = baseGPU.GetIsDefFanValid();
-	this->m_bIsFanValid = baseGPU.GetIsFanValid();
 	this->m_bIsManaged = baseGPU.GetIsManaged();
-	this->m_nAdapterIndex = baseGPU.GetAdapterIndex();
-	this->m_nBusNumber = baseGPU.GetBusNumber();
-	this->m_nLastEngine = baseGPU.GetLastEngine();
-	this->m_nLastTemp = baseGPU.GetLastTemp();
 	this->m_nGPUID = baseGPU.GetGPUID();
-	this->m_szAdapterName = baseGPU.GetAdapterName();
-	this->m_pGPUSettings = baseGPU.GetGPUSetting();
 	this->m_pTwin = baseGPU.GetTwin();
 }
 
@@ -48,16 +39,9 @@ BaseGPU::BaseGPU(const BaseGPU& baseGPU)
 ///////////////////////////////////////////////////////////////////////////////
 BaseGPU& BaseGPU::operator=(const BaseGPU& baseGPU)
 {
-	this->m_bIsDefFanValid = baseGPU.GetIsDefFanValid();
-	this->m_bIsFanValid = baseGPU.GetIsFanValid();
+	this->m_enmEntityType = baseGPU.GetEntityType();
 	this->m_bIsManaged = baseGPU.GetIsManaged();
-	this->m_nAdapterIndex = baseGPU.GetAdapterIndex();
-	this->m_nBusNumber = baseGPU.GetBusNumber();
-	this->m_nLastEngine = baseGPU.GetLastEngine();
-	this->m_nLastTemp = baseGPU.GetLastTemp();
 	this->m_nGPUID = baseGPU.GetGPUID();
-	this->m_szAdapterName = baseGPU.GetAdapterName();
-	this->m_pGPUSettings = baseGPU.GetGPUSetting();
 	this->m_pTwin = baseGPU.GetTwin();
 
 	return *this;
@@ -66,17 +50,9 @@ BaseGPU& BaseGPU::operator=(const BaseGPU& baseGPU)
 BaseGPU* BaseGPU::Clone()
 {
 	BaseGPU* pGPU = new BaseGPU();
-	
-	pGPU->SetAdapterIndex(this->m_nAdapterIndex);
-	pGPU->SetAdapterName(this->m_szAdapterName);
-	pGPU->SetBusNumber(this->m_nBusNumber);
+
 	pGPU->SetGPUID(this->m_nGPUID);
-	pGPU->SetGPUSetting(this->m_pGPUSettings);
-	pGPU->SetIsDefFanValid(this->m_bIsDefFanValid);	
-	pGPU->SetIsFanValid(this->m_bIsFanValid);
 	pGPU->SetIsManaged(this->m_bIsManaged);
-	pGPU->SetLastEngine(this->m_nLastEngine);
-	pGPU->SetLastTemp(this->m_nLastTemp);
 	pGPU->SetTwin(this->m_pTwin);
 
 	return pGPU;
@@ -86,16 +62,8 @@ BaseGPU* BaseGPU::DeepCopy()
 {
 	BaseGPU* pGPU = new BaseGPU();
 
-	pGPU->SetAdapterIndex(this->m_nAdapterIndex);
-	pGPU->SetAdapterName(this->m_szAdapterName);
-	pGPU->SetBusNumber(this->m_nBusNumber);
 	pGPU->SetGPUID(this->m_nGPUID);
-	pGPU->SetGPUSetting(this->m_pGPUSettings->DeepCopy());
-	pGPU->SetIsDefFanValid(this->m_bIsDefFanValid);
-	pGPU->SetIsFanValid(this->m_bIsFanValid);
 	pGPU->SetIsManaged(this->m_bIsManaged);
-	pGPU->SetLastEngine(this->m_nLastEngine);
-	pGPU->SetLastTemp(this->m_nLastTemp);
 	pGPU->SetTwin(this->m_pTwin->DeepCopy());
 
 	return pGPU;

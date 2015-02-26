@@ -19,9 +19,12 @@
 
 MinerThread::MinerThread()
 {
+	this->m_enmEntityType = ENTITY_TYPE::MINER_THREAD;
 	this->m_bBlockFound = this->m_bNewBlock = this->m_bReady = false;
 	this->m_unHashes = 0;
 	this->total_mhashes_done = 0;
+	this->m_dLastHashRate = 0.0;
+	this->m_stBlocksFound = this->m_stRejected = 0;
 	this->m_pMinerData = NULL;
 	this->m_bShutown = this->m_bDidShutDown = false;
 	this->m_clLock = new boost::mutex();
@@ -29,23 +32,29 @@ MinerThread::MinerThread()
 
 MinerThread::MinerThread(MinerData* pData)
 {
-	m_pMinerData = pData;
-	m_bBlockFound =false; 
-	m_unHashes = 0;
-	m_pTHREAD = new boost::thread(&MinerThread::Miner, this);
-	total_mhashes_done = 0;
+	this->m_enmEntityType = ENTITY_TYPE::MINER_THREAD;
+	this->m_pMinerData = pData;
+	this->m_bBlockFound = false;
+	this->m_unHashes = 0;
+	this->m_pTHREAD = new boost::thread(&MinerThread::Miner, this);
+	this->total_mhashes_done = 0;
+	this->m_dLastHashRate = 0.0;
+	this->m_stBlocksFound = this->m_stRejected = 0;
 	this->m_bShutown = this->m_bDidShutDown = false;
 	this->m_clLock = new boost::mutex();
 }
 
-MinerThread::MinerThread(const MinerThread& miner)
+MinerThread::MinerThread(const MinerThread& miner) : Entity(miner)
 {
-	m_pMinerData = miner.GetMinerData();
-	m_bBlockFound = miner.GetIsBlockFound(); 
-	m_bNewBlock = miner.GetIsNewBlock();
-	m_bReady = miner.GetIsReady();
-	m_unHashes = miner.GetHashes();
-	m_pTHREAD = new boost::thread(&MinerThread::Miner, this);
+	this->m_pMinerData = miner.GetMinerData();
+	this->m_bBlockFound = miner.GetIsBlockFound();
+	this->m_bNewBlock = miner.GetIsNewBlock();
+	this->m_bReady = miner.GetIsReady();
+	this->m_unHashes = miner.GetHashes();
+	this->m_stBlocksFound = miner.GetBlocksFound();
+	this->m_stRejected = miner.GetRejected();
+	this->m_dLastHashRate = miner.GetLastHashRate();
+	this->m_pTHREAD = new boost::thread(&MinerThread::Miner, this);
 	this->m_bShutown = miner.GetIsShuttingDown();
 	this->m_bDidShutDown = miner.GetDidShutDown();
 	this->m_clLock = new boost::mutex();
@@ -53,12 +62,16 @@ MinerThread::MinerThread(const MinerThread& miner)
 
 MinerThread& MinerThread::operator=(const MinerThread& miner)
 {
-	m_pMinerData = miner.GetMinerData();
-	m_bBlockFound = miner.GetIsBlockFound(); 
-	m_bNewBlock = miner.GetIsNewBlock();
-	m_bReady = miner.GetIsReady();
-	m_unHashes = miner.GetHashes();
-	m_pTHREAD = new boost::thread(&MinerThread::Miner, this);
+	this->m_enmEntityType = miner.GetEntityType();
+	this->m_pMinerData = miner.GetMinerData();
+	this->m_bBlockFound = miner.GetIsBlockFound();
+	this->m_bNewBlock = miner.GetIsNewBlock();
+	this->m_bReady = miner.GetIsReady();
+	this->m_unHashes = miner.GetHashes();
+	this->m_stBlocksFound = miner.GetBlocksFound();
+	this->m_stRejected = miner.GetRejected();
+	this->m_dLastHashRate = miner.GetLastHashRate();
+	this->m_pTHREAD = new boost::thread(&MinerThread::Miner, this);
 	this->m_bShutown = miner.GetIsShuttingDown();
 	this->m_bDidShutDown = miner.GetDidShutDown();
 	this->m_clLock = new boost::mutex();

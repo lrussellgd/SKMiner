@@ -17,6 +17,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 CLKernel::CLKernel()
 {
+	this->m_enmEntityType = ENTITY_TYPE::CL_KERNEL;
 	this->m_unWorkSize = this->m_unPrefWorkSize = 0;
 	this->m_stGlobalWorkGroupSize = this->m_stLocalWorkGroupSize = 0;
 	this->m_pReqdWorkGroupSizes[0] = 0;
@@ -27,7 +28,7 @@ CLKernel::CLKernel()
 ///////////////////////////////////////////////////////////////////////////////
 //Copy Constructor
 ///////////////////////////////////////////////////////////////////////////////
-CLKernel::CLKernel(const CLKernel& cKernel)
+CLKernel::CLKernel(const CLKernel& cKernel) : Entity(cKernel)
 {
 	this->m_szName = cKernel.GetName();
 
@@ -49,6 +50,7 @@ CLKernel::CLKernel(const CLKernel& cKernel)
 ///////////////////////////////////////////////////////////////////////////////
 CLKernel& CLKernel::operator=(const CLKernel& cKernel)
 {
+	this->m_enmEntityType = cKernel.GetEntityType();
 	this->m_szName = cKernel.GetName();
 
 	this->m_unWorkSize = cKernel.GetWorksize();;
