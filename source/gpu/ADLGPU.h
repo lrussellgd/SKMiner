@@ -225,7 +225,6 @@ public:
 	const std::string&					GetBiosPartNumber()					const								{	return this->m_szBiosPartNumber;											}
 	const std::string&					GetBiosVersion()					const								{	return this->m_szBiosVersion;												}
 
-
 	///////////////////////////////////////////////////////////////////////////////
 	//Mutators
 	///////////////////////////////////////////////////////////////////////////////

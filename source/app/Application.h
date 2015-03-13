@@ -24,7 +24,6 @@
 #include "../event/IListener.h"
 #include <json_spirit.h>
 
-
 class ADL;
 class GPUData;
 class RunOptions;
@@ -99,7 +98,6 @@ public:
 	ADL* GetADL() const { return this->m_pADL; }
 
 	json_spirit::mObject GetData();
-
 };
 
 #endif //_APPLICATION_H_

@@ -38,7 +38,7 @@ protected:
 	std::string   m_szIP, m_szPORT;
 
 	void DecayTime(double fadd, double fsecs, double& fRet);
-
+	
 public:
 
 	ServerConnection();

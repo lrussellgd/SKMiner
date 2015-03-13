@@ -31,11 +31,8 @@
 #include "../threads/MinerThread.h"
 #include "../data/MinerData.h"
 #include "../compute/CLDevice.h"
-
 #include "../web/WebServer.h"
-
 #include "../utilities/StringUtils.h"
-
 #include "../file/FileLoader.h"
 #include "../file/JSONFileLoader.h"
 

@@ -15,6 +15,7 @@
 #define _REQUEST_H_
 
 #include "../base/Entity.h"
+
 #include <string>
 #include <vector>
 

@@ -110,18 +110,26 @@ double ServerConnection::Hashes()
 {	
 	unsigned int unElapsed = m_tTIMER.ElapsedMilliseconds();
 
+<<<<<<< HEAD
 	double loclSecs = ((double)unElapsed) / 1000.0;
 
+=======
+>>>>>>> origin/master
 	double dHashes = 0;
 
 	for (int nIndex = 0; nIndex < m_vecTHREADS.size(); nIndex++)
 	{
+<<<<<<< HEAD
 		double KHASH = ((double)m_vecTHREADS[nIndex]->GetHashes()) / ((double)unElapsed);
+=======
+		double KHASH = (double)m_vecTHREADS[nIndex]->GetHashes() / unElapsed;
+>>>>>>> origin/master
 		m_vecTHREADS[nIndex]->SetLastHashRate(KHASH);
 
 		dHashes += KHASH;
 		m_vecTHREADS[nIndex]->SetHashes(0);
 	}
+<<<<<<< HEAD
 
 	m_dCurrentHashses = dHashes;
 	return dHashes;
@@ -168,4 +176,8 @@ void ServerConnection::DecayTime(double fadd, double fsecs, double& fRet)
 	ftotal = 1.0 + fprop;
 	fRet += (fadd * fprop);
 	fRet /= ftotal;
+=======
+			
+	return dHashes;
+>>>>>>> origin/master
 }

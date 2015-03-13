@@ -54,6 +54,7 @@ namespace Http
 		private:
 
 			int m_n32ID;
+
 			StatusType m_eStatusType;
 			std::vector<Header*> m_vecHeaders;
 

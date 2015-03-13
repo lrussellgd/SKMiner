@@ -147,6 +147,7 @@ APIHandler& APIHandler::operator = (const APIHandler& apiHandler)
 {
 	this->m_enmEntityType = apiHandler.GetEntityType();
 	this->m_clLock = new boost::mutex();
+	
 	return *this;
 }
 

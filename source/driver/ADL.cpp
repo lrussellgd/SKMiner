@@ -233,12 +233,21 @@ void ADL::SetupADL()
 			continue;
 		}
 
+<<<<<<< HEAD
 		if (std::find(m_vecValidAdapters.begin(), m_vecValidAdapters.end(), adapterId) != m_vecValidAdapters.end())
 		{
 			continue;
 		}
 
 		if (adapterId == 0)
+=======
+		if (nLastAdapter == adapterId)
+			continue;
+
+		m_nNumDevices++;
+		nLastAdapter = adapterId;
+		if(adapterId == 0)
+>>>>>>> origin/master
 		{
 			std::cout << "Adapter returns ID 0 meaning not AMD. Card order might be confused" << std::endl;
 			continue;
@@ -411,6 +420,7 @@ void ADL::SetupOD5(ADLGPU* adlGPU, GPUSetting* gpuSetting)
 	}
 	m_bstADLLock->unlock();
 
+<<<<<<< HEAD
 	if (adlResult != ADL_OK)
 	{
 		std::cout << "ADL_Overdrive5_ODPerformanceLevels_Get Failed!" << std::endl;
@@ -420,6 +430,21 @@ void ADL::SetupOD5(ADLGPU* adlGPU, GPUSetting* gpuSetting)
 	adlGPU->SetDefaultMemoryClock(pOdPerformanceLevels->aLevels[0].iMemoryClock / 100);
 	adlGPU->SetDefaultVoltage(pOdPerformanceLevels->aLevels[0].iVddc);
 	
+=======
+	
+	adapterId = -1;
+    for (int i = 0; i < m_nNumDevices; ++i)
+    {
+		if (!gpus[i]->GetGPU()->GetGPUSetting()->GetIsEnabled())
+		{
+			gpus[i]->SetGPUEngine(0);
+			gpus[i]->SetGPUMemclock(0);
+			gpus[i]->SetGPUVDDC(0);
+			gpus[i]->SetGPUFan(0);
+			gpus[i]->SetGPUPowerTune(0);
+			continue;
+		}
+>>>>>>> origin/master
 
 	memset(performanceLevelsBuffer, 0, perfLevelSize);
 	pOdPerformanceLevels->iSize = perfLevelSize;
@@ -436,6 +461,7 @@ void ADL::SetupOD5(ADLGPU* adlGPU, GPUSetting* gpuSetting)
 		std::cout << "ADL_Overdrive5_ODPerformanceLevels_Get Failed!" << std::endl;
 	}
 
+<<<<<<< HEAD
 	adlGPU->SetCurrentEngineClock(pOdPerformanceLevels->aLevels[0].iEngineClock / 100);
 	adlGPU->SetCurrentMemoryClock(pOdPerformanceLevels->aLevels[0].iMemoryClock / 100);
 	adlGPU->SetCurrentVoltage(pOdPerformanceLevels->aLevels[0].iVddc);
@@ -451,6 +477,28 @@ void ADL::SetupOD5(ADLGPU* adlGPU, GPUSetting* gpuSetting)
 		m_bstADLLock->lock();
 		{
 			adlResult = ADL_Overdrive5_ThermalDevices_Enum(iAdapterIndex, iThermalControllerIndex, &tcInfo);
+=======
+		//gpus[i]->SetName(m_lpInfo[i].strAdapterName);
+		m_bIsActive = true;
+
+		ADLGPU* adlGPU = (ADLGPU*)gpus[i]->GetGPU();
+		if(adlGPU == NULL)
+		{
+			adlGPU = new ADLGPU();
+		}
+		
+		adlGPU->SetGPUID(i);
+		adlGPU->SetAdapterIndex(iAdapterIndex);
+		adlGPU->SetLPAdapterID(lpAdapterID);
+		adlGPU->SetAdapterName(m_lpInfo[i].strAdapterName);
+		adlGPU->SetIsDefFanValid(false);
+
+		ADLBiosInfo BiosInfo;
+		adlResult = ADL_Adapter_VideoBiosInfo_Get(iAdapterIndex, &BiosInfo);
+		if (adlResult != ADL_ERR)
+		{
+			adlGPU->SetADLBiosInfo(BiosInfo);
+>>>>>>> origin/master
 		}
 		m_bstADLLock->unlock();
 
