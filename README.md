@@ -50,7 +50,7 @@ BUILDING
 
 You will need these libraries to build from source:
 
-jansson 2.7, boost 1.56.0, OpenSSL, json spirit
+boost 1.56.0, OpenSSL, json spirit, The C++ Rest SDK
 
 You will also need the AMD ADL files. See the readme.txt in /source/ADL_SDK 
 
